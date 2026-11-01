@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "APCTT public model catalogue (apctt-model-catalog-v1)",
+  "description": "Decisions D64 and D67: the public models the organizer recommends for the reference GPU of the event machine (D40: RTX 3070 Laptop GPU, 8 GB VRAM) and provides offline in the read-only model store (<APCTT_MODEL_STORE>/<org>/<name>/<revision>/). Only these models and team-trained weights may be used. tools/model_catalog.py checks this schema and the rules a schema cannot express (unique ids and repositories, the VRAM sum, the 8 GB budget, libraries and quantization packages present in the common base).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["catalog_version", "gpu_budget", "store_layout", "models"],
+  "properties": {
+    "catalog_version": {"const": "apctt-model-catalog-v1"},
+    "status": {
+      "enum": ["seed", "verified"],
+      "description": "seed: a placeholder built from an earlier list; verified: the organizer's selection"
+    },
+    "author": {"type": "string", "maxLength": 200},
+    "updated": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "notes": {"type": "array", "items": {"type": "string", "maxLength": 2000}},
+    "gpu_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference_gpu",
+        "vram_gib",
+        "target_peak_gib",
+        "llm_context_tokens",
+        "encoder_batch",
+        "overhead_gib",
+        "measured"
+      ],
+      "properties": {
+        "reference_gpu": {"type": "string", "minLength": 1, "maxLength": 200},
+        "vram_gib": {"type": "number", "exclusiveMinimum": 0},
+        "target_peak_gib": {"type": "number", "exclusiveMinimum": 0},
+        "llm_context_tokens": {"type": "integer", "minimum": 1},
+        "encoder_batch": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]* x [1-9][0-9]* tokens$",
+          "description": "batch x sequence length of the encoder estimate, e.g. \"32 x 512 tokens\""
+        },
+        "overhead_gib": {"type": "number", "minimum": 0},
+        "measured": {"type": "boolean"}
+      }
+    },
+    "store_layout": {"const": "<APCTT_MODEL_STORE>/<org>/<name>/<revision>/"},
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {"$ref": "#/$defs/model"}
+    }
+  },
+  "$defs": {
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "repo",
+        "revision",
+        "license",
+        "license_evidence",
+        "license_file_in_repo",
+        "gated",
+        "category",
+        "task",
+        "params_b",
+        "files",
+        "download_bytes",
+        "weights",
+        "load",
+        "vram_estimate_gib",
+        "fits_8gb",
+        "cpu_feasible",
+        "verified_load_with_base",
+        "use",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+          "maxLength": 80,
+          "description": "short kebab-case id that submission.json models[].catalog_id names"
+        },
+        "repo": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$",
+          "maxLength": 200
+        },
+        "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "license": {"enum": ["Apache-2.0", "MIT"]},
+        "license_evidence": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "license_file_in_repo": {"type": "boolean"},
+        "gated": {"const": false},
+        "category": {"enum": ["llm", "embedding", "reranker", "zero-shot", "encoder", "other"]},
+        "task": {"type": "string", "minLength": 1, "maxLength": 300},
+        "params_b": {"type": "number", "exclusiveMinimum": 0},
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 300}
+        },
+        "download_bytes": {"type": "integer", "minimum": 0},
+        "weights": {
+          "type": "object",
+          "description": "every weight file of files (a name ending in one of tools/model_catalog.py WEIGHT_SUFFIXES) -> its size in bytes and sha256 (the repository's LFS sha256 at the revision). get_models.py and build_env.py check every download against it, and make_submission.py refuses a bundle file with these bytes, however it is named or declared: public weights are not shipped (D64).",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["size", "sha256"],
+            "properties": {
+              "size": {"type": "integer", "minimum": 1},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        },
+        "load": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["library", "class", "dtype", "quantization", "trust_remote_code"],
+          "properties": {
+            "library": {"enum": ["transformers", "sentence-transformers"]},
+            "class": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$", "maxLength": 80},
+            "dtype": {"enum": ["bfloat16", "float16", "float32"]},
+            "quantization": {
+              "anyOf": [
+                {"type": "null"},
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["method"],
+                  "properties": {
+                    "method": {
+                      "enum": ["bitsandbytes-nf4", "bitsandbytes-int8"],
+                      "description": "bitsandbytes-nf4: transformers BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=<load.dtype>) with device_map {'': <cuda device>}; bitsandbytes-int8: BitsAndBytesConfig(load_in_8bit=True). Both need a CUDA GPU and bitsandbytes in the common base (tools/model_catalog.py quantization_config)."
+                    }
+                  }
+                }
+              ]
+            },
+            "trust_remote_code": {
+              "const": false,
+              "description": "repository code is never run: the base libraries must load the model"
+            }
+          }
+        },
+        "vram_estimate_gib": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["weights", "kv_cache_or_activations", "overhead", "peak"],
+          "properties": {
+            "weights": {"type": "number", "minimum": 0},
+            "kv_cache_or_activations": {"type": "number", "minimum": 0},
+            "overhead": {"type": "number", "minimum": 0},
+            "peak": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "fits_8gb": {"type": "boolean"},
+        "measured": {
+          "type": "boolean",
+          "description": "optional: true once HQ measured this entry with tools/hq/check_models_gpu.py on the reference GPU; false while its figures are estimates (every 4-bit entry until then)"
+        },
+        "cpu_feasible": {"type": "string", "pattern": "^(yes|slow|no)\\b", "maxLength": 500},
+        "verified_load_with_base": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "use": {"type": "string", "minLength": 1, "maxLength": 500},
+        "notes": {"type": "string", "maxLength": 2000}
+      }
+    }
+  }
+}

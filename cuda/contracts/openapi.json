@@ -1,0 +1,1304 @@
+{
+  "components": {
+    "schemas": {
+      "AssessmentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "case": {
+            "$ref": "#/components/schemas/Case"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "case"
+        ],
+        "title": "AssessmentRequest",
+        "type": "object"
+      },
+      "AssessmentResult": {
+        "additionalProperties": false,
+        "description": "SPEC-06 result as returned unchanged from a valid module or built by the supervisor.",
+        "properties": {
+          "abstention_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "insufficient evidence",
+                  "conflicting evidence",
+                  "ambiguous scope",
+                  "out of scope"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abstention Reason"
+          },
+          "assessment_status": {
+            "enum": [
+              "completed",
+              "abstained",
+              "failed"
+            ],
+            "title": "Assessment Status",
+            "type": "string"
+          },
+          "assessment_target": {
+            "$ref": "#/components/schemas/AssessmentTargetOut"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "checklist_version": {
+            "title": "Checklist Version",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "criterion_rationale": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Criterion Rationale",
+            "type": "object"
+          },
+          "criterion_status": {
+            "additionalProperties": {
+              "enum": [
+                "met",
+                "not met",
+                "insufficient evidence"
+              ],
+              "type": "string"
+            },
+            "title": "Criterion Status",
+            "type": "object"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "evidence_reference": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/EvidenceItem"
+              },
+              "type": "array"
+            },
+            "title": "Evidence Reference",
+            "type": "object"
+          },
+          "missing_evidence": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Missing Evidence",
+            "type": "object"
+          },
+          "predicted_trl": {
+            "anyOf": [
+              {
+                "maximum": 9.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted Trl"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "trl_rationale": {
+            "title": "Trl Rationale",
+            "type": "string"
+          },
+          "uncertainty": {
+            "$ref": "#/components/schemas/TrlInterval"
+          }
+        },
+        "required": [
+          "schema_version",
+          "checklist_version",
+          "case_id",
+          "assessment_target",
+          "assessment_status",
+          "predicted_trl",
+          "criterion_status",
+          "evidence_reference",
+          "missing_evidence",
+          "abstention_reason",
+          "error_code"
+        ],
+        "title": "AssessmentResult",
+        "type": "object"
+      },
+      "AssessmentTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "target_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Target Id",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "component",
+              "subsystem",
+              "system",
+              "technology"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_id",
+          "type",
+          "description"
+        ],
+        "title": "AssessmentTarget",
+        "type": "object"
+      },
+      "AssessmentTargetOut": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "target_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Target Id",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "component",
+              "subsystem",
+              "system",
+              "technology"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_id",
+          "type",
+          "description"
+        ],
+        "title": "AssessmentTargetOut",
+        "type": "object"
+      },
+      "Case": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment As Of"
+          },
+          "assessment_target": {
+            "$ref": "#/components/schemas/AssessmentTarget"
+          },
+          "benefits": {
+            "title": "Benefits",
+            "type": "string"
+          },
+          "case_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Case Id",
+            "type": "string"
+          },
+          "checklist_version": {
+            "title": "Checklist Version",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "minItems": 1,
+            "title": "Documents",
+            "type": "array"
+          },
+          "input_profile": {
+            "title": "Input Profile",
+            "type": "string"
+          },
+          "intended_application": {
+            "title": "Intended Application",
+            "type": "string"
+          },
+          "intended_environment": {
+            "title": "Intended Environment",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "sdg_rationale": {
+            "title": "Sdg Rationale",
+            "type": "string"
+          },
+          "sdg_targets": {
+            "items": {
+              "enum": [
+                6,
+                11,
+                13,
+                14
+              ],
+              "type": "integer"
+            },
+            "title": "Sdg Targets",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "input_profile",
+          "checklist_version",
+          "case_id",
+          "assessment_as_of",
+          "assessment_target",
+          "intended_application",
+          "intended_environment",
+          "title",
+          "documents"
+        ],
+        "title": "Case",
+        "type": "object"
+      },
+      "Document": {
+        "additionalProperties": false,
+        "description": "One PDF, carried as strict base64 with the SHA-256 of the decoded bytes.",
+        "properties": {
+          "content_base64": {
+            "title": "Content Base64",
+            "type": "string"
+          },
+          "document_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Date"
+          },
+          "document_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "format": {
+            "const": "pdf",
+            "title": "Format",
+            "type": "string"
+          },
+          "language": {
+            "const": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "title",
+          "document_date",
+          "language",
+          "format",
+          "content_base64",
+          "sha256"
+        ],
+        "title": "Document",
+        "type": "object"
+      },
+      "ErrorBody": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "code": {
+            "enum": [
+              "INVALID_JSON",
+              "REQUEST_VALIDATION_ERROR",
+              "VERSION_MISMATCH",
+              "UNSUPPORTED_INPUT_PROFILE",
+              "REQUEST_TOO_LARGE",
+              "UNSUPPORTED_MEDIA_TYPE",
+              "REQUEST_ID_CONFLICT",
+              "BUSY",
+              "NOT_READY",
+              "STORAGE_CAPACITY",
+              "JOB_NOT_FOUND",
+              "ROUTE_NOT_FOUND",
+              "METHOD_NOT_ALLOWED",
+              "AUTH_REQUIRED",
+              "FORBIDDEN",
+              "INTERNAL_ERROR"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "field_errors": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "title": "Field Errors",
+            "type": "array"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "retryable": {
+            "title": "Retryable",
+            "type": "boolean"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "stage",
+          "retryable",
+          "action"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "diagnostics": {
+            "additionalProperties": true,
+            "title": "Diagnostics",
+            "type": "object"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ErrorMeta"
+          }
+        },
+        "required": [
+          "error",
+          "meta",
+          "diagnostics"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "ErrorMeta": {
+        "additionalProperties": false,
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trace_id",
+          "api_version"
+        ],
+        "title": "ErrorMeta",
+        "type": "object"
+      },
+      "EvidenceItem": {
+        "additionalProperties": false,
+        "properties": {
+          "document_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "page": {
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "supporting_span": {
+            "title": "Supporting Span",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "page"
+        ],
+        "title": "EvidenceItem",
+        "type": "object"
+      },
+      "FieldError": {
+        "additionalProperties": false,
+        "properties": {
+          "expected": {
+            "title": "Expected",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "received_type": {
+            "title": "Received Type",
+            "type": "string"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "rule",
+          "expected",
+          "received_type"
+        ],
+        "title": "FieldError",
+        "type": "object"
+      },
+      "HealthLive": {
+        "additionalProperties": false,
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "live": {
+            "const": true,
+            "title": "Live",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "live",
+          "api_version"
+        ],
+        "title": "HealthLive",
+        "type": "object"
+      },
+      "HealthReady": {
+        "additionalProperties": false,
+        "properties": {
+          "active_assessment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Assessment Id"
+          },
+          "compute_status": {
+            "additionalProperties": true,
+            "title": "Compute Status",
+            "type": "object"
+          },
+          "loading_policy": {
+            "const": "cold_per_case",
+            "title": "Loading Policy",
+            "type": "string"
+          },
+          "ready": {
+            "title": "Ready",
+            "type": "boolean"
+          },
+          "reason_code": {
+            "enum": [
+              "READY",
+              "BUSY",
+              "CONFIG_INVALID",
+              "STORAGE_CAPACITY",
+              "CUDA_UNAVAILABLE",
+              "CUDA_RUNTIME_ERROR",
+              "RECOVERY_PENDING"
+            ],
+            "title": "Reason Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ready",
+          "reason_code",
+          "loading_policy",
+          "active_assessment_id",
+          "compute_status"
+        ],
+        "title": "HealthReady",
+        "type": "object"
+      },
+      "JobEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_id": {
+            "title": "Assessment Id",
+            "type": "string"
+          },
+          "diagnostics": {
+            "additionalProperties": true,
+            "title": "Diagnostics",
+            "type": "object"
+          },
+          "job_status": {
+            "enum": [
+              "queued",
+              "running",
+              "finished"
+            ],
+            "title": "Job Status",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/JobMeta"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result_origin": {
+            "anyOf": [
+              {
+                "enum": [
+                  "module",
+                  "supervisor"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Origin"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "request_id",
+          "job_status",
+          "result_origin",
+          "result",
+          "meta",
+          "diagnostics"
+        ],
+        "title": "JobEnvelope",
+        "type": "object"
+      },
+      "JobMeta": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "config_sha256": {
+            "title": "Config Sha256",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "input_sha256": {
+            "title": "Input Sha256",
+            "type": "string"
+          },
+          "package_id": {
+            "title": "Package Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          },
+          "verified_package_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Package Sha256"
+          }
+        },
+        "required": [
+          "trace_id",
+          "api_version",
+          "schema_version",
+          "package_id",
+          "input_sha256",
+          "config_sha256",
+          "verified_package_sha256",
+          "accepted_at",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "JobMeta",
+        "type": "object"
+      },
+      "PackageInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "checklist_sha256": {
+            "title": "Checklist Sha256",
+            "type": "string"
+          },
+          "checklist_version": {
+            "title": "Checklist Version",
+            "type": "string"
+          },
+          "compute": {
+            "additionalProperties": true,
+            "title": "Compute",
+            "type": "object"
+          },
+          "config_sha256": {
+            "title": "Config Sha256",
+            "type": "string"
+          },
+          "contract_version": {
+            "title": "Contract Version",
+            "type": "string"
+          },
+          "declared_package_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Package Sha256"
+          },
+          "example_only": {
+            "title": "Example Only",
+            "type": "boolean"
+          },
+          "kit_version": {
+            "title": "Kit Version",
+            "type": "string"
+          },
+          "loading_policy": {
+            "const": "cold_per_case",
+            "title": "Loading Policy",
+            "type": "string"
+          },
+          "package_id": {
+            "title": "Package Id",
+            "type": "string"
+          },
+          "profile": {
+            "enum": [
+              "dev",
+              "evaluation"
+            ],
+            "title": "Profile",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "verification_status": {
+            "enum": [
+              "verified",
+              "not_verified",
+              "mismatch"
+            ],
+            "title": "Verification Status",
+            "type": "string"
+          },
+          "verified_package_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Package Sha256"
+          },
+          "worker_protocol_version": {
+            "title": "Worker Protocol Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "package_id",
+          "profile",
+          "api_version",
+          "schema_version",
+          "checklist_version",
+          "kit_version",
+          "contract_version",
+          "worker_protocol_version",
+          "declared_package_sha256",
+          "verified_package_sha256",
+          "verification_status",
+          "example_only",
+          "loading_policy",
+          "config_sha256",
+          "checklist_sha256",
+          "compute"
+        ],
+        "title": "PackageInfo",
+        "type": "object"
+      },
+      "TrlInterval": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "trl_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "lower": {
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Lower",
+            "type": "integer"
+          },
+          "upper": {
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Upper",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "lower",
+          "upper"
+        ],
+        "title": "TrlInterval",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Organizer-hosted assessment server (development kit). Submit a canonical report case, then poll the job. HTTP 200 on GET means the lookup succeeded, not that the assessment succeeded.",
+    "title": "APCTT Assessment API",
+    "version": "apctt-api-v0.2-draft"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health/live": {
+      "get": {
+        "operationId": "live_health_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthLive"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Live",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReady"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReady"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Ready",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/assessments": {
+      "post": {
+        "operationId": "submit_v1_assessments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobEnvelope"
+                }
+              }
+            },
+            "description": "Accepted or duplicate"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "400"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "401"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "403"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "404"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "409"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "413"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "415"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "422"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "503"
+          }
+        },
+        "summary": "Submit",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/v1/assessments/{assessment_id}": {
+      "get": {
+        "operationId": "get_job_v1_assessments__assessment_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobEnvelope"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "400"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "401"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "403"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "404"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "409"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "413"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "415"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "422"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "503"
+          }
+        },
+        "summary": "Get Job",
+        "tags": [
+          "assessments"
+        ]
+      }
+    },
+    "/v1/package": {
+      "get": {
+        "operationId": "package_v1_package_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "400"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "401"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "403"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "404"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "409"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "413"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "415"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "422"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "503"
+          }
+        },
+        "summary": "Package",
+        "tags": [
+          "assessments"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "package": "swagger-ui-dist",
+  "version": "5.33.0",
+  "license": "Apache-2.0",
+  "tarball": "https://registry.npmjs.org/swagger-ui-dist/-/swagger-ui-dist-5.33.0.tgz",
+  "integrity": "sha512-wpdK+m6BU5yj6pmUdMskZVTSWYG4DLglAx3sIhylloY37i8O37IrH+YEpqdXNfpaTGxILRBFzUqLF2jKqbfI7A==",
+  "retrieved_at": "2026-10-09T03:42:52Z",
+  "files": {
+    "swagger-ui-bundle.js": {
+      "sha256": "e8c50c067c2edbfd794aaf3b14c2446f53190a45fae9578ccf535524dc4417a0",
+      "bytes": 1586029,
+      "upstream_sha256": "62df541529080464a7660adc793eab7128c6193ce3be24ddc1e0e0a4a63edc2f",
+      "upstream_bytes": 1585988,
+      "modified": "modified: Korean IDN TLD labels replaced by their punycode equivalents, as is the Korean sample label of the JSON Schema format examples (decision D79, 2026-10-13)"
+    },
+    "swagger-ui-bundle.js.LICENSE.txt": {
+      "sha256": "63818894e4b04cd0e3180d9cb20761e227a939121e7484f8e1d528227c756f89",
+      "bytes": 4442
+    },
+    "swagger-ui.css": {
+      "sha256": "1ac324f7dcd27e4b9386b4bd6421271ec147e922a22c05ba24b11515e9aa6321",
+      "bytes": 186154
+    },
+    "favicon-32x32.png": {
+      "sha256": "3ed612f41e050ca5e7000cad6f1cbe7e7da39f65fca99c02e99e6591056e5837",
+      "bytes": 628
+    },
+    "LICENSE": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    "NOTICE": {
+      "sha256": "4c91976c9942f60eccbd2b34fd7f7bd527e625b23a7787efdcaac658f2f9a6fd",
+      "bytes": 268,
+      "upstream_sha256": "0d20d1adef18aee3f40dd258172155521ce702ac445cb5f7b7d60ed32dad2fb2"
+    }
+  },
+  "note": "Third-party assets under their own licence (see LICENSE); not relicensed.",
+  "generated": {
+    "swagger-ui-bundle.js.DEPENDENCY-LICENSES.txt": {
+      "sha256": "fbdc376c1da9aabc455b4c84acbef3ffc03335eb587c42dd12c3c31e6549a688",
+      "bytes": 272658,
+      "packages": 114,
+      "method": "scripts/swagger_ui_dependency_notices.py (npm --before=2026-09-16T09:23:00Z)"
+    }
+  }
+}

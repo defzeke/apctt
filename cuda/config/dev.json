@@ -1,0 +1,72 @@
+{
+  "config_version": "apctt-config-v1",
+  "profile": "dev",
+  "bind_host": "127.0.0.1",
+  "bind_port": 8000,
+  "data_dir": "../server_data",
+  "worker_tmp_dir": "../worker_tmp",
+  "schema_version": "apctt-pdf-example-v1",
+  "checklist_path": "../contracts/checklist.official.json",
+  "retry_after_seconds": 1,
+  "limits": {
+    "max_request_bytes": 83886080,
+    "max_documents": 3,
+    "max_document_bytes": 52428800,
+    "max_total_pages": 300,
+    "max_result_bytes": 2097152,
+    "deadline_ms": 180000,
+    "termination_grace_ms": 2000,
+    "max_log_bytes": 1048576,
+    "max_observation_bytes": 32768,
+    "max_jobs": 1000,
+    "min_free_disk_bytes": 104857600,
+    "max_diagnostics_bytes": 32768,
+    "max_field_errors": 20,
+    "max_stack_frames": 10
+  },
+  "compute": {
+    "device": "cpu",
+    "require_cuda": false,
+    "allow_cpu_fallback": false,
+    "precision": "float32",
+    "loading_policy": "cold_per_case",
+    "seed": 42
+  },
+  "module": {
+    "package_id": "participant-example-cpu",
+    "entrypoint": "participant_example.adapter:AssessmentModule",
+    "module_root": "..",
+    "package_root": "../participant_example",
+    "asset_root": "../participant_example",
+    "declared_package_sha256": null,
+    "example_only": true,
+    "settings": {
+      "criteria_phrases": {
+        "APCTT-C01": [],
+        "APCTT-C02": [],
+        "APCTT-C03": [],
+        "APCTT-C04": ["tested"],
+        "APCTT-C05": [],
+        "APCTT-C06": [],
+        "APCTT-C07": [],
+        "APCTT-C08": [],
+        "APCTT-C09": [],
+        "APCTT-C10": ["acceptance criteria were met", "met the acceptance criteria"],
+        "APCTT-C11": [],
+        "APCTT-C12": []
+      },
+      "completed_trl": 4
+    }
+  },
+  "worker": {
+    "python": null,
+    "launcher_argv": [],
+    "extra_env": {}
+  },
+  "isolation": {
+    "evidence_file": null
+  },
+  "auth": {
+    "bearer_token_file": null
+  }
+}

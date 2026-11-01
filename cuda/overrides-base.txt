@@ -1,0 +1,6 @@
+# APCTT common base environment overrides (uv --override), used when the common base is locked
+# (scripts/base_environment.py lock; decisions D60 and D64: one base, no per-team packages).
+# opencv-python is never installed: rapidocr-onnxruntime asks for it, but opencv-python-headless (in
+# the base) provides the same cv2 module without GUI libraries, and two packages writing cv2/ into
+# one environment overwrite each other's files.
+opencv-python ; sys_platform == 'never'

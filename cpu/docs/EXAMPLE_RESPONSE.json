@@ -1,0 +1,95 @@
+{
+  "assessment_id": "DEMO-JOB-001",
+  "request_id": "DEMO-REQ-001",
+  "job_status": "finished",
+  "result_origin": "module",
+  "result": {
+    "schema_version": "apctt-pdf-example-v1",
+    "checklist_version": "APCTT-2026-CHECKLIST-v1",
+    "case_id": "DEMO-001",
+    "assessment_target": {
+      "target_id": "T001",
+      "type": "component",
+      "description": "Synthetic sensor fixture; not a validated technology"
+    },
+    "assessment_status": "abstained",
+    "predicted_trl": null,
+    "criterion_status": {
+      "APCTT-C01": "insufficient evidence",
+      "APCTT-C02": "insufficient evidence",
+      "APCTT-C03": "insufficient evidence",
+      "APCTT-C04": "met",
+      "APCTT-C05": "insufficient evidence",
+      "APCTT-C06": "insufficient evidence",
+      "APCTT-C07": "insufficient evidence",
+      "APCTT-C08": "insufficient evidence",
+      "APCTT-C09": "insufficient evidence",
+      "APCTT-C10": "insufficient evidence",
+      "APCTT-C11": "insufficient evidence",
+      "APCTT-C12": "insufficient evidence"
+    },
+    "evidence_reference": {
+      "APCTT-C01": [],
+      "APCTT-C02": [],
+      "APCTT-C03": [],
+      "APCTT-C04": [
+        {
+          "document_id": "D001",
+          "page": 1,
+          "supporting_span": "tested"
+        }
+      ],
+      "APCTT-C05": [],
+      "APCTT-C06": [],
+      "APCTT-C07": [],
+      "APCTT-C08": [],
+      "APCTT-C09": [],
+      "APCTT-C10": [],
+      "APCTT-C11": [],
+      "APCTT-C12": []
+    },
+    "missing_evidence": {
+      "APCTT-C01": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C02": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C03": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C05": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C06": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C07": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C08": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C09": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C10": "DEMO rule: no page contains a configured phrase for this criterion.",
+      "APCTT-C11": "DEMO rule: no phrase is configured for this criterion.",
+      "APCTT-C12": "DEMO rule: no phrase is configured for this criterion."
+    },
+    "abstention_reason": "insufficient evidence",
+    "error_code": null
+  },
+  "meta": {
+    "trace_id": "DEMO-TRACE-GET",
+    "api_version": "apctt-api-v0.2-draft",
+    "schema_version": "apctt-pdf-example-v1",
+    "package_id": "DEMO-NOT-EXECUTED",
+    "input_sha256": "0de46c792e22c2c8a88d847fe875854711692b03143d8d2d47df65ab2abf264c",
+    "config_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "verified_package_sha256": null,
+    "accepted_at": "2026-09-29T00:00:00Z",
+    "started_at": "2026-09-29T00:00:00Z",
+    "finished_at": "2026-09-29T00:00:00Z"
+  },
+  "diagnostics": {
+    "profile": "dev",
+    "phase": "finished",
+    "timings_ms": {
+      "load": null,
+      "assess": null,
+      "cleanup": null,
+      "total": null
+    },
+    "unavailable_reasons": {
+      "timings": "ILLUSTRATIVE_NOT_EXECUTED"
+    },
+    "warning_codes": [
+      "DEMO_NOT_EXECUTED"
+    ]
+  }
+}

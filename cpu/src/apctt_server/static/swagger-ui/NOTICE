@@ -1,0 +1,4 @@
+swagger-ui
+Copyright 2020-2021 SmartBear Software Inc.
+
+Modified for the APCTT participant kit: in swagger-ui-bundle.js the Korean IDN TLD labels (and the Korean sample label of the JSON Schema format examples) are replaced by their punycode equivalents (2026-10-13).

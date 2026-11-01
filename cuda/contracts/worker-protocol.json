@@ -1,0 +1,788 @@
+{
+  "case_document": {
+    "additionalProperties": false,
+    "description": "A document as a module receives it in `case.documents` (worker protocol v2).",
+    "properties": {
+      "document_date": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Document Date"
+      },
+      "document_id": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+        "title": "Document Id",
+        "type": "string"
+      },
+      "format": {
+        "const": "pdf",
+        "title": "Format",
+        "type": "string"
+      },
+      "language": {
+        "const": "en",
+        "title": "Language",
+        "type": "string"
+      },
+      "page_count": {
+        "exclusiveMinimum": 0,
+        "title": "Page Count",
+        "type": "integer"
+      },
+      "path": {
+        "title": "Path",
+        "type": "string"
+      },
+      "sha256": {
+        "pattern": "^[0-9a-f]{64}$",
+        "title": "Sha256",
+        "type": "string"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      }
+    },
+    "required": [
+      "document_id",
+      "title",
+      "document_date",
+      "language",
+      "format",
+      "sha256",
+      "page_count",
+      "path"
+    ],
+    "title": "WorkerDocument",
+    "type": "object"
+  },
+  "documents": "each PDF is a read-only copy at case.documents[].path inside the scratch directory; content_base64 is never passed to the worker",
+  "envelope": {
+    "$defs": {
+      "ChecklistPayload": {
+        "additionalProperties": false,
+        "description": "What the worker receives: version and criteria only. No reference labels.",
+        "properties": {
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/Criterion"
+            },
+            "minItems": 1,
+            "title": "Criteria",
+            "type": "array"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "criteria"
+        ],
+        "title": "ChecklistPayload",
+        "type": "object"
+      },
+      "Compute": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_cpu_fallback": {
+            "const": false,
+            "title": "Allow Cpu Fallback",
+            "type": "boolean"
+          },
+          "device": {
+            "enum": [
+              "cpu",
+              "cuda:0"
+            ],
+            "title": "Device",
+            "type": "string"
+          },
+          "loading_policy": {
+            "const": "cold_per_case",
+            "title": "Loading Policy",
+            "type": "string"
+          },
+          "precision": {
+            "title": "Precision",
+            "type": "string"
+          },
+          "require_cuda": {
+            "title": "Require Cuda",
+            "type": "boolean"
+          },
+          "seed": {
+            "minimum": 0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "visible_devices": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Visible Devices"
+          }
+        },
+        "required": [
+          "device",
+          "require_cuda",
+          "allow_cpu_fallback",
+          "precision",
+          "loading_policy",
+          "seed"
+        ],
+        "title": "Compute",
+        "type": "object"
+      },
+      "Criterion": {
+        "additionalProperties": false,
+        "properties": {
+          "criterion_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Criterion Id",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "criterion_id",
+          "description"
+        ],
+        "title": "Criterion",
+        "type": "object"
+      },
+      "WorkerContext": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "scratch_dir": {
+            "title": "Scratch Dir",
+            "type": "string"
+          },
+          "seed": {
+            "minimum": 0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "time_budget_ms": {
+            "exclusiveMinimum": 0,
+            "title": "Time Budget Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "run_id",
+          "seed",
+          "time_budget_ms",
+          "scratch_dir"
+        ],
+        "title": "WorkerContext",
+        "type": "object"
+      },
+      "WorkerRunConfig": {
+        "additionalProperties": false,
+        "properties": {
+          "checklist": {
+            "$ref": "#/$defs/ChecklistPayload"
+          },
+          "compute": {
+            "$ref": "#/$defs/Compute"
+          },
+          "module": {
+            "additionalProperties": true,
+            "title": "Module",
+            "type": "object"
+          }
+        },
+        "required": [
+          "checklist",
+          "module",
+          "compute"
+        ],
+        "title": "WorkerRunConfig",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "case": {
+        "additionalProperties": true,
+        "title": "Case",
+        "type": "object"
+      },
+      "config": {
+        "$ref": "#/$defs/WorkerRunConfig"
+      },
+      "context": {
+        "$ref": "#/$defs/WorkerContext"
+      },
+      "protocol_version": {
+        "const": "apctt-worker-v2",
+        "title": "Protocol Version",
+        "type": "string"
+      },
+      "run_id": {
+        "pattern": "^[A-Za-z0-9_-]{1,64}$",
+        "title": "Run Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "protocol_version",
+      "run_id",
+      "case",
+      "config",
+      "context"
+    ],
+    "title": "WorkerEnvelope",
+    "type": "object"
+  },
+  "failure": {
+    "additionalProperties": false,
+    "description": "Written by the worker wrapper when the module fails in-process. Code is allowlisted.",
+    "properties": {
+      "error_code": {
+        "enum": [
+          "MODULE_ERROR",
+          "OUT_OF_MEMORY",
+          "CUDA_UNAVAILABLE",
+          "CUDA_RUNTIME_ERROR",
+          "CLEANUP_ERROR",
+          "INVALID_OUTPUT",
+          "WORKER_PROTOCOL_ERROR"
+        ],
+        "title": "Error Code",
+        "type": "string"
+      },
+      "phase": {
+        "enum": [
+          "initializing",
+          "loading",
+          "assessing",
+          "cleaning",
+          "finished"
+        ],
+        "title": "Phase",
+        "type": "string"
+      },
+      "protocol_version": {
+        "const": "apctt-worker-v2",
+        "title": "Protocol Version",
+        "type": "string"
+      },
+      "run_id": {
+        "pattern": "^[A-Za-z0-9_-]{1,64}$",
+        "title": "Run Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "protocol_version",
+      "run_id",
+      "phase",
+      "error_code"
+    ],
+    "title": "WorkerFailure",
+    "type": "object"
+  },
+  "files": {
+    "failure": "failure.json.tmp -> failure.json (allowlisted error_code only)",
+    "observation": "observation.json.tmp -> observation.json (bounded sidecar)",
+    "result": "result.json.tmp -> result.json (atomic rename, regular file, no symlink)"
+  },
+  "observation": {
+    "$defs": {
+      "ComputeObservation": {
+        "additionalProperties": false,
+        "properties": {
+          "cuda_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuda Available"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "kernel_probe_passed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kernel Probe Passed"
+          },
+          "measurement_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measurement Method"
+          },
+          "peak_allocated_bytes": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Allocated Bytes"
+          },
+          "peak_reserved_bytes": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Reserved Bytes"
+          },
+          "torch_cuda_build": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Torch Cuda Build"
+          },
+          "torch_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Torch Version"
+          }
+        },
+        "required": [
+          "device",
+          "torch_version",
+          "torch_cuda_build",
+          "cuda_available",
+          "kernel_probe_passed",
+          "peak_allocated_bytes",
+          "peak_reserved_bytes",
+          "measurement_method"
+        ],
+        "title": "ComputeObservation",
+        "type": "object"
+      },
+      "WorkerTimings": {
+        "additionalProperties": false,
+        "properties": {
+          "assess": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assess"
+          },
+          "cleanup": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cleanup"
+          },
+          "load": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Load"
+          }
+        },
+        "required": [
+          "load",
+          "assess",
+          "cleanup"
+        ],
+        "title": "WorkerTimings",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "compute": {
+        "$ref": "#/$defs/ComputeObservation"
+      },
+      "phase": {
+        "enum": [
+          "initializing",
+          "loading",
+          "assessing",
+          "cleaning",
+          "finished"
+        ],
+        "title": "Phase",
+        "type": "string"
+      },
+      "protocol_version": {
+        "const": "apctt-worker-v2",
+        "title": "Protocol Version",
+        "type": "string"
+      },
+      "run_id": {
+        "pattern": "^[A-Za-z0-9_-]{1,64}$",
+        "title": "Run Id",
+        "type": "string"
+      },
+      "source": {
+        "const": "worker_observed",
+        "title": "Source",
+        "type": "string"
+      },
+      "timings_ms": {
+        "$ref": "#/$defs/WorkerTimings"
+      },
+      "unavailable_reasons": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Unavailable Reasons",
+        "type": "object"
+      },
+      "warning_codes": {
+        "items": {
+          "pattern": "^[A-Z0-9_]{1,64}$",
+          "type": "string"
+        },
+        "title": "Warning Codes",
+        "type": "array"
+      }
+    },
+    "required": [
+      "protocol_version",
+      "run_id",
+      "phase",
+      "source",
+      "timings_ms",
+      "unavailable_reasons",
+      "compute",
+      "warning_codes"
+    ],
+    "title": "Observation",
+    "type": "object"
+  },
+  "protocol_version": "apctt-worker-v2",
+  "result": {
+    "$defs": {
+      "AssessmentTargetOut": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "target_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Target Id",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "component",
+              "subsystem",
+              "system",
+              "technology"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_id",
+          "type",
+          "description"
+        ],
+        "title": "AssessmentTargetOut",
+        "type": "object"
+      },
+      "EvidenceItem": {
+        "additionalProperties": false,
+        "properties": {
+          "document_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "page": {
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "supporting_span": {
+            "title": "Supporting Span",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "page"
+        ],
+        "title": "EvidenceItem",
+        "type": "object"
+      },
+      "TrlInterval": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "trl_interval",
+            "title": "Kind",
+            "type": "string"
+          },
+          "lower": {
+            "maximum": 9,
+            "minimum": 1,
+            "title": "Lower",
+            "type": "integer"
+          },
+          "upper": {
+            "maximum": 9,
+            "minimum": 1,
+            "title": "Upper",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "lower",
+          "upper"
+        ],
+        "title": "TrlInterval",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "SPEC-06 result as returned unchanged from a valid module or built by the supervisor.",
+    "properties": {
+      "abstention_reason": {
+        "anyOf": [
+          {
+            "enum": [
+              "insufficient evidence",
+              "conflicting evidence",
+              "ambiguous scope",
+              "out of scope"
+            ],
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Abstention Reason"
+      },
+      "assessment_status": {
+        "enum": [
+          "completed",
+          "abstained",
+          "failed"
+        ],
+        "title": "Assessment Status",
+        "type": "string"
+      },
+      "assessment_target": {
+        "$ref": "#/$defs/AssessmentTargetOut"
+      },
+      "case_id": {
+        "title": "Case Id",
+        "type": "string"
+      },
+      "checklist_version": {
+        "title": "Checklist Version",
+        "type": "string"
+      },
+      "confidence": {
+        "maximum": 1,
+        "minimum": 0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "criterion_rationale": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Criterion Rationale",
+        "type": "object"
+      },
+      "criterion_status": {
+        "additionalProperties": {
+          "enum": [
+            "met",
+            "not met",
+            "insufficient evidence"
+          ],
+          "type": "string"
+        },
+        "title": "Criterion Status",
+        "type": "object"
+      },
+      "error_code": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Error Code"
+      },
+      "evidence_reference": {
+        "additionalProperties": {
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          },
+          "type": "array"
+        },
+        "title": "Evidence Reference",
+        "type": "object"
+      },
+      "missing_evidence": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Missing Evidence",
+        "type": "object"
+      },
+      "predicted_trl": {
+        "anyOf": [
+          {
+            "maximum": 9,
+            "minimum": 1,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Predicted Trl"
+      },
+      "schema_version": {
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "trl_rationale": {
+        "title": "Trl Rationale",
+        "type": "string"
+      },
+      "uncertainty": {
+        "$ref": "#/$defs/TrlInterval"
+      }
+    },
+    "required": [
+      "schema_version",
+      "checklist_version",
+      "case_id",
+      "assessment_target",
+      "assessment_status",
+      "predicted_trl",
+      "criterion_status",
+      "evidence_reference",
+      "missing_evidence",
+      "abstention_reason",
+      "error_code"
+    ],
+    "title": "AssessmentResult",
+    "type": "object"
+  },
+  "result_rules": [
+    "abstention_reason_value",
+    "assessment_status_value",
+    "confidence_range",
+    "criterion_known_id",
+    "criterion_status_complete",
+    "criterion_status_value",
+    "error_code_required",
+    "evidence_item_object",
+    "evidence_item_required",
+    "evidence_keys_match_checklist",
+    "evidence_list",
+    "evidence_locator_exists",
+    "evidence_page_in_document",
+    "evidence_required_for_met",
+    "failed_omits_optional",
+    "map_object",
+    "missing_evidence_required_for_insufficient",
+    "missing_evidence_text",
+    "omit_instead_of_null",
+    "rationale_known_criterion",
+    "rationale_nonblank_text",
+    "result_matches_case",
+    "result_matches_checklist",
+    "result_object",
+    "result_required_field",
+    "result_unknown_field",
+    "status_combination",
+    "strict_trl",
+    "supporting_span_nonblank",
+    "trl_rationale_requires_completed",
+    "uncertainty_interval"
+  ],
+  "stdin": "exactly one UTF-8 JSON envelope, then EOF",
+  "stdout_stderr": "logs only; never parsed as protocol"
+}

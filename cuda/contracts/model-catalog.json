@@ -1,0 +1,1176 @@
+{
+  "catalog_version": "apctt-model-catalog-v1",
+  "status": "verified",
+  "updated": "2026-10-13",
+  "notes": [
+    "The organizer's recommended public models for the reference GPU of the event machine, an NVIDIA GeForce RTX 3070 Laptop GPU with 8 GB VRAM (8 GiB, decision D40): decision D64 (2026-10-10, \"drop the proposal document for the environment, and select and provide public models that fit on an 8 GB GPU\" (translated from Korean)) and the organizer's answer of the same day \"recommend public models, use an RTX 3070 laptop gpu (8 gb vram)\" (translated from Korean). HQ provides every model offline and read-only in the model store (APCTT_MODEL_STORE) of each evaluation machine, and teams download the same files for development with tools/get_models.py. Only these models and team-trained weights (including fine-tunes and adapters of these models, named by base_model) may be used. A public model outside the catalogue cannot be used: each evaluation machine has one shared read-only model store, which cannot hold per-team models for this many teams, and public weights may not be shipped in a submission (organizer answer of 2026-10-13, decision D80).",
+    "4-bit options (decision D67; the organizer's answers of 2026-10-10: first \"add only Qwen3-4B\" (translated from Korean), then \"let's have several other options\" (translated from Korean)): bitsandbytes 0.50.2 is in the common base from apctt-base-9e7fe1324bb6, and five LLMs that do not fit the budget in bf16 are offered in bitsandbytes nf4, loaded from the publishers' bf16 safetensors: smollm3-3b-nf4, granite-4.0-micro-nf4, qwen3-4b-instruct-2507-nf4, mistral-7b-instruct-v0.3-nf4 and granite-3.3-8b-instruct-nf4. They need a CUDA GPU (none of them is a CPU option), carry measured: false and stay in the catalogue only if HQ's GPU measurement confirms them (see the VRAM note).",
+    "The 18 bf16 and float32 entries: every entry was checked against the Hugging Face API on 2026-10-10: licence Apache-2.0 or MIT in the card metadata, not gated, official publisher repository, revision = main at that date, safetensors weights, no auto_map in config.json (trust_remote_code false), architecture loaded by transformers 5.19.0 / sentence-transformers 5.7.0, and no match in the D53 deny list.",
+    "The 18 bf16 and float32 entries were also re-verified independently on 2026-10-10 against the Hugging Face API (licence metadata, LICENSE files, card text, gated flag, publisher, revision = main, file sizes, no auto_map in config.json or tokenizer_config.json, no custom sentence-transformers modules), the D53/D64 deny and name rules of license-policy 0.3.0, recomputed VRAM figures, and offline CPU loads of five entries with the dev base.",
+    "The five 4-bit entries: every entry was checked against the Hugging Face API on 2026-10-10: Apache-2.0 in the card metadata with no added restrictions in the card text, not gated (files downloaded without a token), original publisher, revision = main at that date, safetensors, no auto_map in config.json or tokenizer_config.json, model_type loaded by transformers 5.19.0, no match in the license-policy 0.3.0 model deny rules.",
+    "VRAM figures are estimates, not GPU measurements (gpu_budget.measured is false). LLM peak = weights + bf16 KV cache for 8,192 tokens at batch 1 + 1.0 GiB overhead; encoder peak = weights + activations for 32 x 512 tokens assuming eager attention + 1.0 GiB. 4-bit entries: Linear layers at nf4 with double quantisation (0.515869 bytes per parameter), embeddings, untied lm_head and norms in bf16, + bf16 KV cache for 8,192 tokens at batch 1, + 1.0 GiB overhead. The overhead has to hold the CUDA context and the transient activations of the 8,192-token prefill; a meta-device simulation of the transformers 5.19.0 forward (checked against the MPS allocator) puts those activations beyond the KV cache at 0.61-0.91 GiB for these five entries, so mistral-7b-instruct-v0.3-nf4 (about 6.1-6.3 GiB) and granite-3.3-8b-instruct-nf4 (about 6.6-6.9 GiB) may measure above their estimate while staying within 7.0 GiB. 'bitsandbytes-nf4' here means nf4 with double quantisation and bf16 compute, and HQ measures that recipe. HQ runs tools/hq/check_models_gpu.py on the RTX 3070 Laptop GPU before the kit is published and removes any entry over 7.0 GiB or whose load is not well inside the 180-second limit.",
+    "files lists only what loading needs, plus the repository LICENSE where there is one; download_bytes is the sum of their sizes: 23 models, 78,998,212,954 bytes (73.57 GiB), of which 27,109,610,846 bytes for the 18 bf16 and float32 entries and 51,888,602,108 bytes for the five 4-bit entries. 18 of the 23 repositories (all but the five Qwen LLM repositories) have no LICENSE file: the store and the team download tool add the licence text (Apache-2.0 or MIT) next to the files. The store holds the bf16 safetensors of the 4-bit entries, so every case that uses one reads them in full and quantises them on the GPU before the first token (D41: the 180-second limit includes the load).",
+    "Left out after verification: Qwen/Qwen2.5-7B-Instruct in nf4 (licence and files fine, but its 8,192-token prefill needs about 1.09 GiB of activations beyond the KV cache, so HQ's measurement is expected at about 7.0-7.3 GiB, above the 7.0 GiB target) and every candidate that fits the 7.0 GiB target neither in bf16 nor in nf4. Larger bf16 models do not fit at 8,192 tokens: SmolLM3-3B 7.29 GiB, granite-4.0-micro 7.96 GiB, Qwen3-4B 9.62 GiB, which is why those three are offered in nf4."
+  ],
+  "gpu_budget": {
+    "reference_gpu": "RTX 3070 Laptop GPU 8 GiB of the event machine, Asus TUF Dash F15 FX516PR-HN002 (D40, D76)",
+    "vram_gib": 8,
+    "target_peak_gib": 7.0,
+    "llm_context_tokens": 8192,
+    "encoder_batch": "32 x 512 tokens",
+    "overhead_gib": 1.0,
+    "measured": false
+  },
+  "store_layout": "<APCTT_MODEL_STORE>/<org>/<name>/<revision>/",
+  "models": [
+    {
+      "id": "qwen2.5-0.5b-instruct",
+      "repo": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; LICENSE file in repo: yes (https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/7ae557604adf67be50417f59c2c2f167def9a775/LICENSE)",
+      "license_file_in_repo": true,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat)",
+      "params_b": 0.494,
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 999597690,
+      "weights": {
+        "model.safetensors": {
+          "size": 988097824,
+          "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.92,
+        "kv_cache_or_activations": 0.09,
+        "overhead": 1.0,
+        "peak": 2.01
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 0.49B parameters, about 2 GB RAM in float32; short prompts and answers run in seconds",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): Qwen2ForCausalLM loaded in 1.96 s, 494,032,768 parameters, torch.bfloat16; greedy generate of 12 tokens from a chat prompt in 0.41 s -> 'Technology Life Cycle (TRL)'",
+      "use": "Smallest LLM: CPU-friendly extraction of dates, organisations and short yes/no judgements over a few retrieved passages.",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. Context 32,768 tokens (config max_position_embeddings); the estimate assumes 8,192. 2 KV heads: 12 KiB of KV cache per token."
+    },
+    {
+      "id": "qwen3-0.6b",
+      "repo": "Qwen/Qwen3-0.6B",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; LICENSE file in repo: yes (https://huggingface.co/Qwen/Qwen3-0.6B/blob/c1899de289a04d12100db370d81485cdf75e47ca/LICENSE)",
+      "license_file_in_repo": true,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, optional thinking mode)",
+      "params_b": 0.596,
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 1519193708,
+      "weights": {
+        "model.safetensors": {
+          "size": 1503300328,
+          "sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 1.11,
+        "kv_cache_or_activations": 0.88,
+        "overhead": 1.0,
+        "peak": 2.98
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 0.60B parameters, about 2.5 GB RAM in float32; keep thinking off for speed",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): Qwen3ForCausalLM loaded in 2.02 s, 596,049,920 parameters, torch.bfloat16; greedy generate of 12 tokens from a chat prompt in 0.48 s -> 'TRL stands for Technology Readiness Level.'",
+      "use": "Small CPU-friendly LLM with a switchable reasoning mode; pass enable_thinking=False to the chat template to keep answers short under the 3-minute limit.",
+      "notes": "model.safetensors also stores lm_head.weight (751,632,384 tensor elements) although tie_word_embeddings is true; 596,049,920 parameters are loaded. Context 40,960 tokens (config)."
+    },
+    {
+      "id": "qwen2.5-1.5b-instruct",
+      "repo": "Qwen/Qwen2.5-1.5B-Instruct",
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; LICENSE file in repo: yes (https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/blob/989aa7980e4cf806f80c7fef2b1adb7bc71aa306/LICENSE)",
+      "license_file_in_repo": true,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat)",
+      "params_b": 1.544,
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 3098967011,
+      "weights": {
+        "model.safetensors": {
+          "size": 3087467144,
+          "sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 2.88,
+        "kv_cache_or_activations": 0.22,
+        "overhead": 1.0,
+        "peak": 4.09
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 1.54B parameters, about 6 GB RAM in float32; fine for short outputs, long prompts plus long answers can exceed 3 minutes on a laptop CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): Qwen2ForCausalLM loaded in 1.93 s, 1,543,714,304 parameters, torch.bfloat16; greedy generate of 12 tokens from a chat prompt in 0.64 s -> 'Technology Readiness Level'",
+      "use": "Compact general LLM for summarising evidence passages and drafting short justifications.",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. Context 32,768 tokens (config)."
+    },
+    {
+      "id": "qwen3-1.7b",
+      "repo": "Qwen/Qwen3-1.7B",
+      "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; LICENSE file in repo: yes (https://huggingface.co/Qwen/Qwen3-1.7B/blob/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e/LICENSE)",
+      "license_file_in_repo": true,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, optional thinking mode)",
+      "params_b": 1.721,
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+        "model.safetensors.index.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 4079434577,
+      "weights": {
+        "model-00001-of-00002.safetensors": {
+          "size": 3441185608,
+          "sha256": "169ad53ec313c3a34b06c0809216e4fc072cce444a5d4ff2b59690d064130ed5"
+        },
+        "model-00002-of-00002.safetensors": {
+          "size": 622329984,
+          "sha256": "912becff8d60672aa8628ef08c05898d9adf17c2ad4ae3caf99b065622fdeff9"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 3.21,
+        "kv_cache_or_activations": 0.88,
+        "overhead": 1.0,
+        "peak": 5.08
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 1.72B parameters, about 7 GB RAM in float32; short outputs only on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): Qwen3ForCausalLM loaded in 2.06 s, 1,720,574,976 parameters, torch.bfloat16; greedy generate of 12 tokens from a chat prompt in 0.85 s -> 'TRL stands for Technology Readiness Level.'",
+      "use": "Stronger small LLM for criterion-by-criterion judgements; thinking mode for harder cases if time allows.",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. The two shards store lm_head.weight separately (2,031,739,904 tensor elements); 1,720,574,976 parameters are loaded (tied). Context 40,960 tokens (config)."
+    },
+    {
+      "id": "smollm2-1.7b-instruct",
+      "repo": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+      "revision": "31b70e2e869a7173562077fd711b654946d38674",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/HuggingFaceTB/SmolLM2-1.7B-Instruct/revision/31b70e2e869a7173562077fd711b654946d38674?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, English)",
+      "params_b": 1.711,
+      "files": [
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 3426155020,
+      "weights": {
+        "model.safetensors": {
+          "size": 3422777952,
+          "sha256": "f55217be716b6a997b97b9d8d7eb6fad02e00858f5010ec24f64603c3a98a0e8"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 3.19,
+        "kv_cache_or_activations": 1.5,
+        "overhead": 1.0,
+        "peak": 5.69
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 1.71B parameters, about 7 GB RAM in float32; short outputs only on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): LlamaForCausalLM loaded in 1.84 s, 1,711,376,384 parameters, torch.bfloat16; greedy generate of 12 tokens from a chat prompt in 0.72 s -> 'Technology Readiness Level'",
+      "use": "Non-Qwen English LLM of the same size class, for comparison or ensembling.",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. Context 8,192 tokens (config max_position_embeddings), so the catalogue budget is also its maximum. No grouped-query attention (32 KV heads): 1.5 GiB of KV cache at 8,192 tokens, the largest per token in the catalogue. Uses the LlamaForCausalLM architecture class but is HuggingFaceTB's own Apache-2.0 model; no D53 deny pattern matches. The repository also holds onnx/ files, training logs and training_args.bin, which are not listed."
+    },
+    {
+      "id": "granite-3.3-2b-instruct",
+      "repo": "ibm-granite/granite-3.3-2b-instruct",
+      "revision": "707f574c62054322f6b5b04b6d075f0a8f05e0f0",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/ibm-granite/granite-3.3-2b-instruct/revision/707f574c62054322f6b5b04b6d075f0a8f05e0f0?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, optional thinking)",
+      "params_b": 2.534,
+      "files": [
+        "added_tokens.json",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+        "model.safetensors.index.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 5071858627,
+      "weights": {
+        "model-00001-of-00002.safetensors": {
+          "size": 4999999840,
+          "sha256": "12880d33c0ad4726af5cf8c07406905f9b496253c58ee46f52be8bde8ccf2254"
+        },
+        "model-00002-of-00002.safetensors": {
+          "size": 67121712,
+          "sha256": "a8757c5bf7627933e7fddbd9bab0533491b4dc0962820e0617f356ca1a379ffa"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 4.72,
+        "kv_cache_or_activations": 0.62,
+        "overhead": 1.0,
+        "peak": 6.34
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 2.53B parameters, about 10 GB RAM in float32; short outputs only on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): GraniteForCausalLM loaded in 1.9 s, 2,533,539,840 parameters, torch.bfloat16; greedy generate of 12 tokens from a chat prompt in 1.61 s -> 'Technology Readiness Level.'",
+      "use": "Largest LLM that fits in bf16 without quantisation; long-context (128K) instruction model for reading longer evidence.",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. Estimated peak 6.34 GiB at 8,192 tokens, the largest bf16 entry. Context 131,072 tokens (config)."
+    },
+    {
+      "id": "smollm3-3b-nf4",
+      "repo": "HuggingFaceTB/SmolLM3-3B",
+      "revision": "a07cc9a04f16550a088caea529712d1d335b0ac1",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/HuggingFaceTB/SmolLM3-3B/revision/a07cc9a04f16550a088caea529712d1d335b0ac1?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, dual mode: thinking on or off)",
+      "params_b": 3.075,
+      "files": [
+        "chat_template.jinja",
+        "config.json",
+        "generation_config.json",
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+        "model.safetensors.index.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 6167529097,
+      "weights": {
+        "model-00001-of-00002.safetensors": {
+          "size": 4966315264,
+          "sha256": "e5eed4113a925264c33e3cdf76cd9f547c06a207ef2270914a7274a2bf685ffd"
+        },
+        "model-00002-of-00002.safetensors": {
+          "size": 1183919744,
+          "sha256": "6c3ad90646457295723e4da5ee8afac47006e20407b122df5174693dd8d68a43"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": {
+          "method": "bitsandbytes-nf4"
+        },
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 1.84,
+        "kv_cache_or_activations": 0.56,
+        "overhead": 1.0,
+        "peak": 3.4
+      },
+      "fits_8gb": true,
+      "measured": false,
+      "cpu_feasible": "no: needs a GPU (bitsandbytes 4-bit on CPU is slow, and 3.1B parameters in float32 need about 12 GB RAM)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0, bitsandbytes 0.50.2 added for the test), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (sizes and LFS sha256 or git blob ids checked): SmolLM3ForCausalLM loaded with BitsAndBytesConfig(nf4, double quant, bf16 compute) on CPU in 3.12 s, 252 Linear4bit modules (nf4), lm_head and embeddings bf16, get_memory_footprint 1.799 GiB; greedy generate (max 12 tokens, enable_thinking=False) on CPU in 5.82 s -> 'Technology Readiness Level' (EOS after 5 tokens). Not run on a GPU",
+      "use": "Smallest 4-bit option (3.1B, estimated peak 3.4 GiB) from a third publisher (Hugging Face), with an optional reasoning mode for harder judgements.",
+      "notes": "nf4 estimate from the safetensors headers: 2,812,280,832 Linear-layer parameters x 0.515869 B (4-bit codes + 8-bit absmax per 64 + fp32 per 256 blocks) = 1.351 GiB; embed_tokens 262,668,288, lm_head tied to embed_tokens, norms 149,504 kept in bf16 = 0.490 GiB; KV cache 36 layers x 2 x 4 KV heads x 128 x 2 B x 8,192 tokens = 0.562 GiB; + 1.0 GiB overhead = 3.40 GiB (3.53 GiB without double quantisation). bf16 does not fit: weights 5.73 GiB, estimated peak 7.29 GiB. Dual-mode chat template (chat_template.jinja): extended thinking is on by default; pass enable_thinking=False (or '/no_think' in the system prompt) for direct answers. On three short TRL prompts (MPS, bf16, temperature 0.6, top_p 0.95) think mode produced 1,212, 473 and 3 thinking tokens. Card 'License' section: Apache 2.0, no added terms. Context 65,536 tokens (config). Load with BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map={'': 0}, from the publisher's bf16 safetensors listed here (no third-party re-upload, no AWQ/GPTQ runtime). Needs bitsandbytes 0.50.2, which is in the common base from apctt-base-9e7fe1324bb6 (D67). Not measured on a GPU (measured: false): HQ runs tools/hq/check_models_gpu.py on the RTX 3070 Laptop GPU 8 GiB (D40) before the kit is published and removes this entry if it does not load within the budget (peak <= 7.0 GiB, load well inside the 180-second limit). Cold load: the store holds the bf16 safetensors, so every case reads 6.15 GB from disk and quantises it on the GPU before the first token (D41: the 180-second limit includes the load)."
+    },
+    {
+      "id": "granite-4.0-micro-nf4",
+      "repo": "ibm-granite/granite-4.0-micro",
+      "revision": "56111ae135df9c53a78c99028e7bc24035a9e979",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/ibm-granite/granite-4.0-micro/revision/56111ae135df9c53a78c99028e7bc24035a9e979?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, tool calling)",
+      "params_b": 3.403,
+      "files": [
+        "chat_template.jinja",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+        "model.safetensors.index.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 6815448287,
+      "weights": {
+        "model-00001-of-00002.safetensors": {
+          "size": 4918145376,
+          "sha256": "131a793b45ddeee8e7c83a77846c350b52316158917ef589c006c4a10f2de952"
+        },
+        "model-00002-of-00002.safetensors": {
+          "size": 1887565800,
+          "sha256": "6b6383a5aca723940d9e4be63fa1575e9c44941e7f5d489b923c0eaeada2c02f"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": {
+          "method": "bitsandbytes-nf4"
+        },
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 1.99,
+        "kv_cache_or_activations": 0.62,
+        "overhead": 1.0,
+        "peak": 3.62
+      },
+      "fits_8gb": true,
+      "measured": false,
+      "cpu_feasible": "no: needs a GPU (bitsandbytes 4-bit on CPU is slow, and 3.4B parameters in float32 need about 14 GB RAM)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0, bitsandbytes 0.50.2 added for the test), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (sizes and LFS sha256 or git blob ids checked): GraniteMoeHybridForCausalLM loaded with BitsAndBytesConfig(nf4, double quant, bf16 compute) on CPU in 2.65 s, 240 Linear4bit modules (nf4), lm_head and embeddings bf16, get_memory_footprint 1.944 GiB; greedy generate (max 12 tokens) on CPU in 9.69 s -> 'TRL stands for Technology Readiness Level.' (EOS after 9 tokens). Not run on a GPU",
+      "use": "IBM's 3.4B dense instruct model (estimated peak 3.6 GiB): instruction following, tool calling and long context for evidence extraction.",
+      "notes": "nf4 estimate from the safetensors headers: 3,145,728,000 Linear-layer parameters x 0.515869 B (4-bit codes + 8-bit absmax per 64 + fp32 per 256 blocks) = 1.511 GiB; embed_tokens 256,901,120, lm_head tied to embed_tokens, norms 207,360 kept in bf16 = 0.479 GiB; KV cache 40 layers x 2 x 8 KV heads x 64 x 2 B x 8,192 tokens = 0.625 GiB; + 1.0 GiB overhead = 3.62 GiB (3.75 GiB without double quantisation). bf16 does not fit: weights 6.34 GiB, estimated peak 7.96 GiB. Class GraniteMoeHybridForCausalLM, but this checkpoint is dense and attention-only (40 attention layers, no Mamba layers, no experts), so it needs no mamba-ssm kernels, unlike granite-4.0-h-micro. The repository also holds model.sig (a signature file), which is not listed. Card text: License Apache 2.0, no added terms. Context 131,072 tokens (config). Load with BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map={'': 0}, from the publisher's bf16 safetensors listed here (no third-party re-upload, no AWQ/GPTQ runtime). Needs bitsandbytes 0.50.2, which is in the common base from apctt-base-9e7fe1324bb6 (D67). Not measured on a GPU (measured: false): HQ runs tools/hq/check_models_gpu.py on the RTX 3070 Laptop GPU 8 GiB (D40) before the kit is published and removes this entry if it does not load within the budget (peak <= 7.0 GiB, load well inside the 180-second limit). Cold load: the store holds the bf16 safetensors, so every case reads 6.81 GB from disk and quantises it on the GPU before the first token (D41: the 180-second limit includes the load)."
+    },
+    {
+      "id": "qwen3-4b-instruct-2507-nf4",
+      "repo": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; LICENSE file in repo: yes (https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507/blob/cdbee75f17c01a7cc42f958dc650907174af0554/LICENSE)",
+      "license_file_in_repo": true,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, non-thinking)",
+      "params_b": 4.022,
+      "files": [
+        "LICENSE",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00003.safetensors",
+        "model-00002-of-00003.safetensors",
+        "model-00003-of-00003.safetensors",
+        "model.safetensors.index.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 8060907830,
+      "weights": {
+        "model-00001-of-00003.safetensors": {
+          "size": 3957900840,
+          "sha256": "75311d91bb08cf0b882913da464a1e722a31fb44db35208663487efb7a3d8ed6"
+        },
+        "model-00002-of-00003.safetensors": {
+          "size": 3987450520,
+          "sha256": "0b48adbb1f60e901153d91907ba11ce63bd4b8b584482e730f48808d055dfba1"
+        },
+        "model-00003-of-00003.safetensors": {
+          "size": 99630640,
+          "sha256": "7dd39ccca5e4de123c74c14af44c9bf2eb75df33b4614382af0134528e060d5d"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": {
+          "method": "bitsandbytes-nf4"
+        },
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 2.47,
+        "kv_cache_or_activations": 1.12,
+        "overhead": 1.0,
+        "peak": 4.6
+      },
+      "fits_8gb": true,
+      "measured": false,
+      "cpu_feasible": "no: needs a GPU (bitsandbytes 4-bit on CPU is slow, and 4.0B parameters in float32 need about 16 GB RAM)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0, bitsandbytes 0.50.2 added for the test), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): Qwen3ForCausalLM loaded with BitsAndBytesConfig(nf4, double quant, bf16 compute) on CPU in 5.25 s, 252 Linear4bit modules (nf4), get_memory_footprint 2.417 GiB; greedy generate of 12 tokens on CPU in 7.4 s -> 'Technology Readiness Level.'. Not run on a GPU (earlier run the same day; the revision is still main on the 2026-10-10 recheck)",
+      "use": "4B instruct model (2507 update) at 4.6 GiB estimated peak: the step up from the 2B class for structured TRL judgements when the team uses the GPU.",
+      "notes": "nf4 estimate from the safetensors headers: 3,633,315,840 Linear-layer parameters x 0.515869 B (4-bit codes + 8-bit absmax per 64 + fp32 per 256 blocks) = 1.746 GiB; embed_tokens 388,956,160, lm_head tied to embed_tokens, norms 196,096 kept in bf16 = 0.725 GiB; KV cache 36 layers x 2 x 8 KV heads x 128 x 2 B x 8,192 tokens = 1.125 GiB; + 1.0 GiB overhead = 4.60 GiB (4.75 GiB without double quantisation). bf16 does not fit: weights 7.49 GiB, estimated peak 9.62 GiB. Non-thinking 2507 update (no <think> blocks). Context 262,144 tokens (config). Load with BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map={'': 0}, from the publisher's bf16 safetensors listed here (no third-party re-upload, no AWQ/GPTQ runtime). Needs bitsandbytes 0.50.2, which is in the common base from apctt-base-9e7fe1324bb6 (D67). Not measured on a GPU (measured: false): HQ runs tools/hq/check_models_gpu.py on the RTX 3070 Laptop GPU 8 GiB (D40) before the kit is published and removes this entry if it does not load within the budget (peak <= 7.0 GiB, load well inside the 180-second limit). Cold load: the store holds the bf16 safetensors, so every case reads 8.04 GB from disk and quantises it on the GPU before the first token (D41: the 180-second limit includes the load)."
+    },
+    {
+      "id": "mistral-7b-instruct-v0.3-nf4",
+      "repo": "mistralai/Mistral-7B-Instruct-v0.3",
+      "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False (card metadata keeps an extra_gated_description, but the repository is not gated); no LICENSE file in repo (https://huggingface.co/api/models/mistralai/Mistral-7B-Instruct-v0.3/revision/c170c708c41dac9275d15a8fff4eca08d52bab71?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat)",
+      "params_b": 7.248,
+      "files": [
+        "config.json",
+        "generation_config.json",
+        "model-00001-of-00003.safetensors",
+        "model-00002-of-00003.safetensors",
+        "model-00003-of-00003.safetensors",
+        "model.safetensors.index.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 14498208431,
+      "weights": {
+        "model-00001-of-00003.safetensors": {
+          "size": 4949453792,
+          "sha256": "ce6fb6f6f4d0183f4813cbf4ece24109da629a08d4210da46f77e1d8b0bd5c19"
+        },
+        "model-00002-of-00003.safetensors": {
+          "size": 4999819336,
+          "sha256": "8c0e72f148366b6a3709e002a98706a33d31aec8515090c856c95b2044f92ae0"
+        },
+        "model-00003-of-00003.safetensors": {
+          "size": 4546807800,
+          "sha256": "905dd405363e43d95779c1c1155a2dbfd36155914ae95dbd934e12e490cfb4ca"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": {
+          "method": "bitsandbytes-nf4"
+        },
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 3.85,
+        "kv_cache_or_activations": 1.0,
+        "overhead": 1.0,
+        "peak": 5.85
+      },
+      "fits_8gb": true,
+      "measured": false,
+      "cpu_feasible": "no: needs a GPU (bitsandbytes 4-bit on CPU is slow, and 7.2B parameters in float32 need about 29 GB RAM)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0, bitsandbytes 0.50.2 added for the test), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (sizes and LFS sha256 or git blob ids checked): MistralForCausalLM loaded with BitsAndBytesConfig(nf4, double quant, bf16 compute) on CPU in 7.05 s, 224 Linear4bit modules (nf4), lm_head and embeddings bf16, get_memory_footprint 3.750 GiB; greedy generate (max 12 tokens) on CPU in 25.78 s -> 'Technology Readiness Level, or TRL, is a scale'. Not run on a GPU",
+      "use": "7B-class option from a fourth publisher (Mistral AI) with the smallest 7B footprint (estimated peak 5.85 GiB) for writing justifications.",
+      "notes": "COLD-LOAD WARNING (7-8B class): the store holds the bf16 safetensors, so every case reads 14.50 GB from disk and quantises it on the GPU before the first token (D41: the 180-second limit includes the load); one of the largest loads in the catalogue, not measured on the D40 machine: time the load first and keep generation short. With 16 GB of RAM on the event machine (D76), every case streams them from the SSD again. nf4 estimate from the safetensors headers: 6,979,321,856 Linear-layer parameters x 0.515869 B (4-bit codes + 8-bit absmax per 64 + fp32 per 256 blocks) = 3.353 GiB; embed_tokens 134,217,728, lm_head 134,217,728 (not tied), norms 266,240 kept in bf16 = 0.500 GiB; KV cache 32 layers x 2 x 8 KV heads x 128 x 2 B x 8,192 tokens = 1.000 GiB; + 1.0 GiB overhead = 5.85 GiB (6.16 GiB without double quantisation). bf16 does not fit: weights 13.50 GiB, estimated peak 15.50 GiB. Card metadata still carries an extra_gated_description (privacy-policy text), but the API says gated False and every listed file downloaded without a token on 2026-10-10. The repository also holds consolidated.safetensors (a 14.50 GB duplicate for mistral-inference), params.json, tokenizer.model and tokenizer.model.v3, which are not listed; the tokenizer loads from tokenizer.json. Context 32,768 tokens (config). Load with BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map={'': 0}, from the publisher's bf16 safetensors listed here (no third-party re-upload, no AWQ/GPTQ runtime). Needs bitsandbytes 0.50.2, which is in the common base from apctt-base-9e7fe1324bb6 (D67). Not measured on a GPU (measured: false): HQ runs tools/hq/check_models_gpu.py on the RTX 3070 Laptop GPU 8 GiB (D40) before the kit is published and removes this entry if it does not load within the budget (peak <= 7.0 GiB, load well inside the 180-second limit)."
+    },
+    {
+      "id": "granite-3.3-8b-instruct-nf4",
+      "repo": "ibm-granite/granite-3.3-8b-instruct",
+      "revision": "51dd4bc2ade4059a6bd87649d68aa11e4fb2529b",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/ibm-granite/granite-3.3-8b-instruct/revision/51dd4bc2ade4059a6bd87649d68aa11e4fb2529b?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "llm",
+      "task": "text-generation (instruction chat, optional thinking)",
+      "params_b": 8.171,
+      "files": [
+        "added_tokens.json",
+        "config.json",
+        "generation_config.json",
+        "merges.txt",
+        "model-00001-of-00004.safetensors",
+        "model-00002-of-00004.safetensors",
+        "model-00003-of-00004.safetensors",
+        "model-00004-of-00004.safetensors",
+        "model.safetensors.index.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 16346508463,
+      "weights": {
+        "model-00001-of-00004.safetensors": {
+          "size": 4974694288,
+          "sha256": "b309f7b9e116fafc27c1100629bfcccbcebdab18a4bf7df7accfa728260dc57e"
+        },
+        "model-00002-of-00004.safetensors": {
+          "size": 4991447808,
+          "sha256": "f2e40f157f0139e4b67bbaa4b10efa351162c062771cb543b143c6916a687266"
+        },
+        "model-00003-of-00004.safetensors": {
+          "size": 4970460032,
+          "sha256": "5cf5203a027b7055c995a9d4bdb3a4c9dd44849ae6c9eefa6a16852a816bea76"
+        },
+        "model-00004-of-00004.safetensors": {
+          "size": 1405169256,
+          "sha256": "76ac0c0dbd790a1e003d2fc098a297bfe82a422c129046e9d4e67e6ed3d820f0"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForCausalLM",
+        "dtype": "bfloat16",
+        "quantization": {
+          "method": "bitsandbytes-nf4"
+        },
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 4.2,
+        "kv_cache_or_activations": 1.25,
+        "overhead": 1.0,
+        "peak": 6.45
+      },
+      "fits_8gb": true,
+      "measured": false,
+      "cpu_feasible": "no: needs a GPU (bitsandbytes 4-bit on CPU is slow, and 8.2B parameters in float32 need about 33 GB RAM)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0, bitsandbytes 0.50.2 added for the test), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (sizes and LFS sha256 or git blob ids checked): GraniteForCausalLM loaded with BitsAndBytesConfig(nf4, double quant, bf16 compute) on CPU in 5.29 s, 280 Linear4bit modules (nf4), lm_head and embeddings bf16, get_memory_footprint 4.087 GiB; greedy generate (max 12 tokens) on CPU in 24.14 s -> 'Technology Readiness Level (TRL)' (EOS after 9 tokens). Not run on a GPU",
+      "use": "Largest model in the set (8.2B), from IBM, with 128K context for reading long evidence and writing justifications (estimated peak 6.45 GiB).",
+      "notes": "COLD-LOAD WARNING (7-8B class): the store holds the bf16 safetensors, so every case reads 16.35 GB from disk and quantises it on the GPU before the first token (D41: the 180-second limit includes the load); one of the largest loads in the catalogue, not measured on the D40 machine: time the load first and keep generation short. With 16 GB of RAM on the event machine (D76), every case streams them from the SSD again. nf4 estimate from the safetensors headers: 7,969,177,600 Linear-layer parameters x 0.515869 B (4-bit codes + 8-bit absmax per 64 + fp32 per 256 blocks) = 3.829 GiB; embed_tokens 201,355,264, lm_head tied to embed_tokens, norms 331,776 kept in bf16 = 0.376 GiB; KV cache 40 layers x 2 x 8 KV heads x 128 x 2 B x 8,192 tokens = 1.250 GiB; + 1.0 GiB overhead = 6.45 GiB (6.80 GiB without double quantisation). bf16 does not fit: weights 15.22 GiB, estimated peak 17.47 GiB. Optional thinking through the chat template (thinking=True gives <think> and <response> blocks); leave it off under the 180-second limit. Same family as the bf16 entry granite-3.3-2b-instruct. Card text: License Apache 2.0, no added terms. Context 131,072 tokens (config). Load with BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16), device_map={'': 0}, from the publisher's bf16 safetensors listed here (no third-party re-upload, no AWQ/GPTQ runtime). Needs bitsandbytes 0.50.2, which is in the common base from apctt-base-9e7fe1324bb6 (D67). Not measured on a GPU (measured: false): HQ runs tools/hq/check_models_gpu.py on the RTX 3070 Laptop GPU 8 GiB (D40) before the kit is published and removes this entry if it does not load within the budget (peak <= 7.0 GiB, load well inside the 180-second limit)."
+    },
+    {
+      "id": "all-minilm-l6-v2",
+      "repo": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/revision/1110a243fdf4706b3f48f1d95db1a4f5529b4d41?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "embedding",
+      "task": "sentence-similarity (English sentence embeddings)",
+      "params_b": 0.023,
+      "files": [
+        "1_Pooling/config.json",
+        "config.json",
+        "config_sentence_transformers.json",
+        "model.safetensors",
+        "modules.json",
+        "sentence_bert_config.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "download_bytes": 91567913,
+      "weights": {
+        "model.safetensors": {
+          "size": 90868376,
+          "sha256": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "SentenceTransformer",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.09,
+        "kv_cache_or_activations": 1.03,
+        "overhead": 1.0,
+        "peak": 2.12
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 22.7M parameters; thousands of sentences per minute on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): SentenceTransformer modules ['Transformer', 'Pooling', 'Normalize'], max_seq_length 256, 22,713,216 parameters, torch.float32, loaded in 2.15 s; encode 3 sentences in 0.01 s -> dim 384, cosine related 0.3862 vs unrelated -0.0169",
+      "use": "Fast English passage retrieval and deduplication baseline (384-dimensional, max_seq_length 256).",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. The model card lists its training datasets, which carry their own terms (policy note). Embeddings are normalised (Normalize module)."
+    },
+    {
+      "id": "bge-base-en-v1.5",
+      "repo": "BAAI/bge-base-en-v1.5",
+      "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "license": "MIT",
+      "license_evidence": "Hugging Face API cardData.license 'mit' (tag license:mit), gated False; no LICENSE file in repo (https://huggingface.co/api/models/BAAI/bge-base-en-v1.5/revision/a5beb1e3e68b9ab74eb54cfd186867f64f240e1a?blobs=true): ship the MIT text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "embedding",
+      "task": "sentence-similarity (English retrieval embeddings)",
+      "params_b": 0.109,
+      "files": [
+        "1_Pooling/config.json",
+        "config.json",
+        "config_sentence_transformers.json",
+        "model.safetensors",
+        "modules.json",
+        "sentence_bert_config.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "download_bytes": 438900399,
+      "weights": {
+        "model.safetensors": {
+          "size": 437955512,
+          "sha256": "c7c1988aae201f80cf91a5dbbd5866409503b89dcaba877ca6dba7dd0a5167d7"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "SentenceTransformer",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.41,
+        "kv_cache_or_activations": 1.31,
+        "overhead": 1.0,
+        "peak": 2.72
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 109M parameters",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): SentenceTransformer modules ['Transformer', 'Pooling', 'Normalize'], max_seq_length 512, 109,482,240 parameters, torch.float32, loaded in 2.1 s; encode 3 sentences in 0.05 s -> dim 768, cosine related 0.6679 vs unrelated 0.4326",
+      "use": "English retrieval of evidence passages for each TRL criterion (768-dimensional, 512 tokens).",
+      "notes": "On the D53 allowlist (license-policy 0.2.2) at this revision. No LICENSE file in the repository: the policy says to add the FlagEmbedding MIT text to any copy. The card suggests the query instruction \"Represent this sentence for searching relevant passages: \" for short queries."
+    },
+    {
+      "id": "granite-embedding-english-r2",
+      "repo": "ibm-granite/granite-embedding-english-r2",
+      "revision": "47ea694b257b703fee9253d75c2b1f2985180498",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/ibm-granite/granite-embedding-english-r2/revision/47ea694b257b703fee9253d75c2b1f2985180498?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "embedding",
+      "task": "sentence-similarity (English retrieval embeddings, long context)",
+      "params_b": 0.149,
+      "files": [
+        "1_Pooling/config.json",
+        "config.json",
+        "model.safetensors",
+        "modules.json",
+        "sentence_bert_config.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 301648237,
+      "weights": {
+        "model.safetensors": {
+          "size": 298041696,
+          "sha256": "23bd9625b32680f180703408ed9d8d7b3a9c1efe4c950111e3ae9d9695b21b29"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "SentenceTransformer",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.28,
+        "kv_cache_or_activations": 0.61,
+        "overhead": 1.0,
+        "peak": 1.89
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 149M parameters (use float32 on CPU)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): SentenceTransformer modules ['Transformer', 'Pooling'], max_seq_length 8192, 149,014,272 parameters, torch.bfloat16, loaded in 2.17 s; encode 3 sentences in 0.09 s -> dim 768, cosine related 0.8209 vs unrelated 0.7255",
+      "use": "English retrieval over long sections (ModernBERT, max_seq_length 8,192) without chunking every paragraph.",
+      "notes": "Card: trained without MS-MARCO because of its non-commercial licence. Modules are Transformer + Pooling (no Normalize): normalise the vectors for cosine search. Weights stored bf16; the dev base loaded them as bfloat16."
+    },
+    {
+      "id": "qwen3-embedding-0.6b",
+      "repo": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/Qwen/Qwen3-Embedding-0.6B/revision/97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "embedding",
+      "task": "sentence-similarity (multilingual retrieval embeddings)",
+      "params_b": 0.596,
+      "files": [
+        "1_Pooling/config.json",
+        "config.json",
+        "config_sentence_transformers.json",
+        "merges.txt",
+        "model.safetensors",
+        "modules.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ],
+      "download_bytes": 1207470117,
+      "weights": {
+        "model.safetensors": {
+          "size": 1191586416,
+          "sha256": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "SentenceTransformer",
+        "dtype": "bfloat16",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 1.11,
+        "kv_cache_or_activations": 1.0,
+        "overhead": 1.0,
+        "peak": 3.11
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 596M parameters; fine for a few hundred passages per case on CPU (use float32 there)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): SentenceTransformer modules ['Transformer', 'Pooling', 'Normalize'], max_seq_length 32768, 595,776,512 parameters, torch.bfloat16, loaded in 2.39 s; encode 3 sentences in 0.28 s -> dim 1024, cosine related 0.6214 vs unrelated 0.3493",
+      "use": "Largest embedding in the catalogue (0.6B, 1,024-dimensional, 32K context, multilingual) for higher-recall retrieval on the GPU.",
+      "notes": "Decoder-based embedder (last-token pooling, Normalize). config_sentence_transformers.json defines a \"query\" prompt (\"Instruct: Given a web search query, retrieve relevant passages that answer the query\\nQuery:\"); encode queries with prompt_name=\"query\" and documents without a prompt. No LICENSE file in the repository."
+    },
+    {
+      "id": "scincl",
+      "repo": "malteos/scincl",
+      "revision": "ebc5348d184ba2fc9beee69b4e394263fce57b2e",
+      "license": "MIT",
+      "license_evidence": "Hugging Face API cardData.license 'mit' (tag license:mit), gated False; no LICENSE file in repo (https://huggingface.co/api/models/malteos/scincl/revision/ebc5348d184ba2fc9beee69b4e394263fce57b2e?blobs=true): ship the MIT text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "embedding",
+      "task": "sentence-similarity (scientific paper embeddings)",
+      "params_b": 0.11,
+      "files": [
+        "1_Pooling/config.json",
+        "config.json",
+        "config_sentence_transformers.json",
+        "model.safetensors",
+        "modules.json",
+        "sentence_bert_config.json",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "download_bytes": 439929063,
+      "weights": {
+        "model.safetensors": {
+          "size": 439700404,
+          "sha256": "d65da219f67f051fdd065bfec666285c136e23002787603b2565e467bfed3c68"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "SentenceTransformer",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.41,
+        "kv_cache_or_activations": 1.31,
+        "overhead": 1.0,
+        "peak": 2.72
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 110M parameters",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): SentenceTransformer modules ['Transformer', 'Pooling'], max_seq_length 512, 109,918,464 parameters, torch.float32, loaded in 2.08 s; encode 3 sentences in 0.05 s -> dim 768, cosine related 0.8507 vs unrelated 0.6744",
+      "use": "Scientific-text embedding (BERT with the SciBERT vocabulary, trained on citation neighbourhoods) for comparing a technology description with papers or patents.",
+      "notes": "Published by the paper author (malteos). Card input format: title + [SEP] + abstract. CLS-token pooling (1_Pooling/config.json pooling_mode_cls_token; the card's transformers example takes the [CLS] vector), no Normalize. Also usable as a SciBERT-vocabulary backbone for fine-tuning (allenai/scibert_scivocab_uncased itself is not eligible). The repository also holds training data files (train_metadata.jsonl.gz 98 MB, train_triples.csv.gz), which are not listed. Trained on S2ORC citation data (card datasets: SciDocs, s2orc); the original S2ORC release was under a non-commercial licence and S2ORC is now ODC-By 1.0, the same open training-data question as all-MiniLM-L6-v2 (LICENSE_POLICY.md section 4, item 8)."
+    },
+    {
+      "id": "ms-marco-minilm-l6-v2",
+      "repo": "cross-encoder/ms-marco-MiniLM-L6-v2",
+      "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2/revision/233902d25c440f23af6f7d6e94d2946bac0bee0a?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "reranker",
+      "task": "text-ranking (English cross-encoder)",
+      "params_b": 0.023,
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "download_bytes": 91815758,
+      "weights": {
+        "model.safetensors": {
+          "size": 90870598,
+          "sha256": "821d1aa69520101d6e0737f78a042ae25b19e5cb9160701909d10434f4aeb0ae"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "CrossEncoder",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.09,
+        "kv_cache_or_activations": 1.03,
+        "overhead": 1.0,
+        "peak": 2.12
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 22.7M parameters; hundreds of query-passage pairs per second on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): CrossEncoder, 22,713,601 parameters, torch.float32, loaded in 2.08 s; predict 2 pairs in 0.01 s -> relevant 8.6804 vs irrelevant -11.3184",
+      "use": "Tiny English reranker: re-order the top retrieved passages for a criterion before sending them to an LLM or NLI model.",
+      "notes": "Max length 512 tokens. Trained on MS MARCO, whose dataset terms are non-commercial (the IBM Granite cards cite this as their reason for excluding it); the model card licence is Apache-2.0 and the card adds no restriction. Outputs raw logits."
+    },
+    {
+      "id": "granite-embedding-reranker-english-r2",
+      "repo": "ibm-granite/granite-embedding-reranker-english-r2",
+      "revision": "d09d3d6971b689bf9c23839e45a470874d46e13a",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/ibm-granite/granite-embedding-reranker-english-r2/revision/d09d3d6971b689bf9c23839e45a470874d46e13a?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "reranker",
+      "task": "text-ranking (English cross-encoder, long context)",
+      "params_b": 0.15,
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 602043447,
+      "weights": {
+        "model.safetensors": {
+          "size": 598436708,
+          "sha256": "e72c8f7087dbfbdbfb9d75077f7b7b05b01b459730f735b468cbde71d66090e6"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "CrossEncoder",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.56,
+        "kv_cache_or_activations": 1.22,
+        "overhead": 1.0,
+        "peak": 2.78
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 150M parameters; slower than MiniLM for long passages",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): CrossEncoder, 149,605,633 parameters, torch.float32, loaded in 2.25 s; predict 2 pairs in 0.09 s -> relevant 0.9523 vs irrelevant 0.6889",
+      "use": "English reranker trained without MS-MARCO, with ModernBERT long context for longer passages.",
+      "notes": "No LICENSE file in the repository. Card: trained without MS-MARCO because of its non-commercial licence."
+    },
+    {
+      "id": "bge-reranker-v2-m3",
+      "repo": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/BAAI/bge-reranker-v2-m3/revision/953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "reranker",
+      "task": "text-ranking (multilingual cross-encoder)",
+      "params_b": 0.568,
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "sentencepiece.bpe.model",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 2293242108,
+      "weights": {
+        "model.safetensors": {
+          "size": 2271071852,
+          "sha256": "d9e3e081faff1eefb84019509b2f5558fd74c1a05a2c7db22f74174fcedb5286"
+        }
+      },
+      "load": {
+        "library": "sentence-transformers",
+        "class": "CrossEncoder",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 2.12,
+        "kv_cache_or_activations": 1.75,
+        "overhead": 1.0,
+        "peak": 4.87
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 568M parameters; a few dozen pairs per case on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): CrossEncoder, 567,755,777 parameters, torch.float32, loaded in 2.93 s; predict 2 pairs in 0.16 s -> relevant 0.9875 vs irrelevant 0.0",
+      "use": "Largest reranker in the catalogue (XLM-RoBERTa-large based, multilingual, long input) for the final ordering of a short list on the GPU.",
+      "notes": "Weights stored float32 (2.27 GB); float16 on the GPU halves weights and activations (card: use_fp16). No LICENSE file in the repository. The repository also holds assets/ images, which are not listed."
+    },
+    {
+      "id": "deberta-v3-base-zeroshot-v2.0-c",
+      "repo": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0-c",
+      "revision": "bddf8c5411c34ac3565e16e04384fd68b2618dda",
+      "license": "MIT",
+      "license_evidence": "Hugging Face API cardData.license 'mit' (tag license:mit), gated False; no LICENSE file in repo (https://huggingface.co/api/models/MoritzLaurer/deberta-v3-base-zeroshot-v2.0-c/revision/bddf8c5411c34ac3565e16e04384fd68b2618dda?blobs=true): ship the MIT text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "zero-shot",
+      "task": "zero-shot-classification (NLI entailment)",
+      "params_b": 0.184,
+      "files": [
+        "added_tokens.json",
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "spm.model",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 379995751,
+      "weights": {
+        "model.safetensors": {
+          "size": 368871908,
+          "sha256": "605e40d2020f4c66666db3e98a4bc277b6214565eac95f35c1a5027a93ee0ef0"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForSequenceClassification",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.69,
+        "kv_cache_or_activations": 2.06,
+        "overhead": 1.0,
+        "peak": 3.75
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 184M parameters; each label is one forward pass per passage",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): pipeline('zero-shot-classification') with DebertaV2ForSequenceClassification (184,423,682 parameters, float32), loaded in 2.21 s; 3 candidate labels in 0.19 s -> ['field deployment', 'laboratory research', 'cooking'] scores [0.7167, 0.2111, 0.0722], id2label {'0': 'entailment', '1': 'not_entailment'}",
+      "use": "Check whether a passage entails a criterion statement (for example \"The technology was demonstrated in an operational environment\") without training.",
+      "notes": "The \"-c\" model: the card says models with \"-c\" are trained only on commercially-friendly data (the versions without \"-c\" also use non-commercial data and are not in the catalogue). Use with pipeline(\"zero-shot-classification\"). Labels entailment / not_entailment; 512-token limit. Weights stored float16, estimate and verification in float32. tokenizer.json is present, so the sentencepiece package (not in the base) is not needed."
+    },
+    {
+      "id": "deberta-v3-large-zeroshot-v2.0-c",
+      "repo": "MoritzLaurer/deberta-v3-large-zeroshot-v2.0-c",
+      "revision": "b2730f16019076bb0009481121efbe4705e0e378",
+      "license": "MIT",
+      "license_evidence": "Hugging Face API cardData.license 'mit' (tag license:mit), gated False; no LICENSE file in repo (https://huggingface.co/api/models/MoritzLaurer/deberta-v3-large-zeroshot-v2.0-c/revision/b2730f16019076bb0009481121efbe4705e0e378?blobs=true): ship the MIT text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "zero-shot",
+      "task": "zero-shot-classification (NLI entailment)",
+      "params_b": 0.435,
+      "files": [
+        "added_tokens.json",
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "spm.model",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 881300219,
+      "weights": {
+        "model.safetensors": {
+          "size": 870176356,
+          "sha256": "688fdc38a29c0e301fa4d67805a45db82d84b8663349aa8d20d67de39aebd02d"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForSequenceClassification",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 1.62,
+        "kv_cache_or_activations": 2.75,
+        "overhead": 1.0,
+        "peak": 5.37
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 435M parameters; limit the number of passage x label pairs on CPU",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): pipeline('zero-shot-classification') with DebertaV2ForSequenceClassification (435,063,810 parameters, float32), loaded in 2.27 s; 3 candidate labels in 0.48 s -> ['field deployment', 'laboratory research', 'cooking'] scores [0.8953, 0.0524, 0.0523], id2label {'0': 'entailment', '1': 'not_entailment'}",
+      "use": "More accurate entailment checks of criterion statements against retrieved passages, on the GPU.",
+      "notes": "Same training data rule as the base \"-c\" model (commercially-friendly data only, per the card). Weights stored float16, estimate and verification in float32. tokenizer.json is present (no sentencepiece needed)."
+    },
+    {
+      "id": "modernbert-base",
+      "repo": "answerdotai/ModernBERT-base",
+      "revision": "8949b909ec900327062f0ebf497f51aef5e6f0c8",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/answerdotai/ModernBERT-base/revision/8949b909ec900327062f0ebf497f51aef5e6f0c8?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "encoder",
+      "task": "fill-mask (encoder backbone for fine-tuning)",
+      "params_b": 0.15,
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 600790696,
+      "weights": {
+        "model.safetensors": {
+          "size": 598635032,
+          "sha256": "340ac08b74eef0d7bdec2d7981a6a3d4249bf0e6aab60634b72ad02c2b8023a9"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForMaskedLM",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 0.56,
+        "kv_cache_or_activations": 1.22,
+        "overhead": 1.0,
+        "peak": 2.78
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "yes: 150M parameters (inference of a fine-tuned head)",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): ModernBertForMaskedLM loaded in 1.85 s, 149,655,232 parameters; one fill-mask forward in 0.08 s, top-5 ['Ġlevel', 'Ġstage', 'Ġgrade', 'ĠLevel', 'Ġat']",
+      "use": "Backbone for team-trained classifiers or token taggers (English, 8,192-token context); ship the fine-tuned weights in assets/ with base_model set to this id.",
+      "notes": "Published as a masked-LM checkpoint; for a classifier load it with AutoModelForSequenceClassification (new head) and train. DeBERTa-v3 and SciBERT backbones are not eligible (no safetensors). No LICENSE file in the repository."
+    },
+    {
+      "id": "modernbert-large",
+      "repo": "answerdotai/ModernBERT-large",
+      "revision": "45bb4654a4d5aaff24dd11d4781fa46d39bf8c13",
+      "license": "Apache-2.0",
+      "license_evidence": "Hugging Face API cardData.license 'apache-2.0' (tag license:apache-2.0), gated False; no LICENSE file in repo (https://huggingface.co/api/models/answerdotai/ModernBERT-large/revision/45bb4654a4d5aaff24dd11d4781fa46d39bf8c13?blobs=true): ship the Apache-2.0 text with any copy",
+      "license_file_in_repo": false,
+      "gated": false,
+      "category": "encoder",
+      "task": "fill-mask (encoder backbone for fine-tuning)",
+      "params_b": 0.396,
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ],
+      "download_bytes": 1585700505,
+      "weights": {
+        "model.safetensors": {
+          "size": 1583544840,
+          "sha256": "44510fec5d3a81a1877f225637b869495f18e55f6f23a09abb9be0acc030295f"
+        }
+      },
+      "load": {
+        "library": "transformers",
+        "class": "AutoModelForMaskedLM",
+        "dtype": "float32",
+        "quantization": null,
+        "trust_remote_code": false
+      },
+      "vram_estimate_gib": {
+        "weights": 1.48,
+        "kv_cache_or_activations": 1.89,
+        "overhead": 1.0,
+        "peak": 4.37
+      },
+      "fits_8gb": true,
+      "cpu_feasible": "slow: 396M parameters; acceptable for a fine-tuned classifier on a few hundred chunks",
+      "verified_load_with_base": "Run 2026-10-10 on CPU with the macOS arm64 dev base (torch 2.11.0, transformers 5.19.0, sentence-transformers 5.7.0), offline (HF_HUB_OFFLINE=1, sockets blocked) from only the listed model files at the pinned revision (LICENSE not needed) (sizes and LFS sha256 or git blob ids checked): ModernBertForMaskedLM loaded in 1.86 s, 395,881,664 parameters; one fill-mask forward in 0.21 s, top-5 ['Ġlevel', 'ĠLevel', 'Ġstage', 'Ġat', 'Ġgrade']",
+      "use": "Larger backbone for team-trained classifiers when the GPU is used.",
+      "notes": "No LICENSE file in the repository. Same tokenizer as modernbert-base."
+    }
+  ]
+}

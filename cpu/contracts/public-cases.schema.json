@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "apctt-public-cases-v1",
+  "title": "APCTT public sample cases (decision D74)",
+  "description": "The public sample cases: one USGS report per case, with the case fields to send, the PDF to fetch (URL, size and SHA-256; the PDFs are not part of the kit) and the organizer's reference labels (estimates, never sent to a module). Read by tools/get_public_cases.py with the kit's schema subset (tools/make_env.py).",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "created",
+    "source",
+    "decisions",
+    "checklist_version",
+    "licence_note",
+    "reference_label_meaning",
+    "inclusion_rule",
+    "limits_applied",
+    "measured_with",
+    "assessment_target_type_mapping",
+    "intended_application_rule",
+    "case_template",
+    "statistics",
+    "smoke_cases",
+    "smoke_case_reason",
+    "excluded",
+    "cases"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {"const": "apctt-public-cases-v1"},
+    "created": {"$ref": "#/$defs/date"},
+    "source": {"$ref": "#/$defs/text"},
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^D[0-9]{2,3}$"}
+    },
+    "checklist_version": {"$ref": "#/$defs/text"},
+    "licence_note": {"$ref": "#/$defs/text"},
+    "reference_label_meaning": {"$ref": "#/$defs/text"},
+    "inclusion_rule": {"$ref": "#/$defs/text"},
+    "limits_applied": {
+      "type": "object",
+      "required": [
+        "max_documents",
+        "max_document_bytes",
+        "max_request_bytes",
+        "max_total_pages",
+        "case_time_limit_s",
+        "decision"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_documents": {"$ref": "#/$defs/positive"},
+        "max_document_bytes": {"$ref": "#/$defs/positive"},
+        "max_request_bytes": {"$ref": "#/$defs/positive"},
+        "max_total_pages": {"$ref": "#/$defs/positive"},
+        "case_time_limit_s": {"$ref": "#/$defs/positive"},
+        "decision": {"type": "string", "pattern": "^D[0-9]{2,3}$"}
+      }
+    },
+    "measured_with": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "assessment_target_type_mapping": {"$ref": "#/$defs/text"},
+    "intended_application_rule": {"$ref": "#/$defs/text"},
+    "case_template": {"type": "object"},
+    "statistics": {
+      "type": "object",
+      "required": ["cases", "excluded", "pdf_mib", "pages", "by_sdg", "by_estimated_trl", "by_type"],
+      "additionalProperties": false,
+      "properties": {
+        "cases": {"type": "integer", "minimum": 0},
+        "excluded": {"type": "integer", "minimum": 0},
+        "pdf_mib": {"$ref": "#/$defs/summary"},
+        "pages": {"$ref": "#/$defs/summary"},
+        "by_sdg": {"$ref": "#/$defs/counts"},
+        "by_estimated_trl": {"$ref": "#/$defs/counts"},
+        "by_type": {"$ref": "#/$defs/counts"}
+      }
+    },
+    "smoke_cases": {
+      "description": "The 3 cases of the diagnostic run that comes back with every submission (decision D73).",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/case_id"}
+    },
+    "smoke_case_reason": {"$ref": "#/$defs/text"},
+    "excluded": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/excluded"}
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "positive": {"type": "integer", "minimum": 1},
+    "identifier": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"},
+    "case_id": {"type": "string", "pattern": "^USGS-SDG-[0-9]{3}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "url": {"type": "string", "pattern": "^https?://\\S+$"},
+    "sdg": {"enum": [6, 11, 13, 14]},
+    "summary": {
+      "type": "object",
+      "required": ["median", "p95", "max", "min", "total"],
+      "additionalProperties": false,
+      "properties": {
+        "median": {"type": "number", "minimum": 0},
+        "p95": {"type": "number", "minimum": 0},
+        "max": {"type": "number", "minimum": 0},
+        "min": {"type": "number", "minimum": 0},
+        "total": {"type": "number", "minimum": 0}
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "excluded": {
+      "type": "object",
+      "required": ["no", "case_id", "title", "pdf_url", "pdf_sha256", "pdf_bytes", "page_count", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "no": {"type": "integer", "minimum": 1},
+        "case_id": {"$ref": "#/$defs/case_id"},
+        "title": {"$ref": "#/$defs/text"},
+        "pdf_url": {"$ref": "#/$defs/url"},
+        "pdf_sha256": {"$ref": "#/$defs/sha256"},
+        "pdf_bytes": {"$ref": "#/$defs/positive"},
+        "page_count": {"$ref": "#/$defs/positive"},
+        "reason": {"$ref": "#/$defs/text"}
+      }
+    },
+    "case": {
+      "type": "object",
+      "required": [
+        "no",
+        "case_id",
+        "sdg",
+        "sdg_target",
+        "category",
+        "title",
+        "publication_year",
+        "publication_url",
+        "pdf_url",
+        "pdf_sha256",
+        "pdf_bytes",
+        "page_count",
+        "text_layer",
+        "assessment_target",
+        "intended_application",
+        "intended_environment",
+        "reference_labels",
+        "sdg_targets",
+        "document",
+        "text_pages"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "no": {"type": "integer", "minimum": 1},
+        "case_id": {"$ref": "#/$defs/case_id"},
+        "sdg": {"$ref": "#/$defs/sdg"},
+        "sdg_target": {"$ref": "#/$defs/text"},
+        "category": {"$ref": "#/$defs/text"},
+        "title": {"$ref": "#/$defs/text"},
+        "publication_year": {"type": "integer", "minimum": 1800, "maximum": 2100},
+        "publication_url": {"$ref": "#/$defs/url"},
+        "pdf_url": {"$ref": "#/$defs/url"},
+        "pdf_sha256": {"$ref": "#/$defs/sha256"},
+        "pdf_bytes": {"$ref": "#/$defs/positive"},
+        "page_count": {"$ref": "#/$defs/positive"},
+        "text_layer": {"type": "boolean"},
+        "assessment_target": {
+          "type": "object",
+          "required": ["target_id", "type", "description"],
+          "additionalProperties": false,
+          "properties": {
+            "target_id": {"$ref": "#/$defs/identifier"},
+            "type": {"enum": ["component", "subsystem", "system", "technology"]},
+            "description": {"$ref": "#/$defs/text"}
+          }
+        },
+        "intended_application": {"$ref": "#/$defs/text"},
+        "intended_environment": {"$ref": "#/$defs/text"},
+        "reference_labels": {
+          "description": "Organizer estimates from the sheet; never sent to a module.",
+          "type": "object",
+          "required": ["estimated_trl", "rationale", "label_origin"],
+          "additionalProperties": false,
+          "properties": {
+            "estimated_trl": {"type": "integer", "minimum": 1, "maximum": 9},
+            "rationale": {"$ref": "#/$defs/text"},
+            "label_origin": {"$ref": "#/$defs/text"}
+          }
+        },
+        "sdg_targets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/sdg"}
+        },
+        "document": {
+          "type": "object",
+          "required": ["document_id", "title", "document_date", "language", "format"],
+          "additionalProperties": false,
+          "properties": {
+            "document_id": {"$ref": "#/$defs/identifier"},
+            "title": {"$ref": "#/$defs/text"},
+            "document_date": {"$ref": "#/$defs/text"},
+            "language": {"const": "en"},
+            "format": {"const": "pdf"}
+          }
+        },
+        "text_pages": {
+          "type": "object",
+          "required": ["pages_with_100_chars", "pages_without_text"],
+          "additionalProperties": false,
+          "properties": {
+            "pages_with_100_chars": {"type": "integer", "minimum": 0},
+            "pages_without_text": {"type": "integer", "minimum": 0}
+          }
+        },
+        "sheet_differences": {"type": "object"},
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/text"}
+        }
+      }
+    }
+  }
+}

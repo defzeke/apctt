@@ -1,0 +1,14 @@
+{
+  "version": "DEMO-CHECKLIST-NOT-OFFICIAL",
+  "official": false,
+  "criteria": [
+    {
+      "criterion_id": "DEMO-C01",
+      "description": "DEMO ONLY: the report states that a prototype or model was tested."
+    },
+    {
+      "criterion_id": "DEMO-C02",
+      "description": "DEMO ONLY: the report states that measured results met stated acceptance criteria."
+    }
+  ]
+}

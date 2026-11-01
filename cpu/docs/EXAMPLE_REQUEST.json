@@ -1,0 +1,29 @@
+{
+  "request_id": "DEMO-REQ-001",
+  "case": {
+    "schema_version": "apctt-pdf-example-v1",
+    "input_profile": "pdf_report",
+    "checklist_version": "APCTT-2026-CHECKLIST-v1",
+    "case_id": "DEMO-001",
+    "assessment_as_of": null,
+    "assessment_target": {
+      "target_id": "T001",
+      "type": "component",
+      "description": "Synthetic sensor fixture; not a validated technology"
+    },
+    "intended_application": "Synthetic interface test",
+    "intended_environment": "Synthetic test environment",
+    "title": "DEMO fixture only",
+    "documents": [
+      {
+        "document_id": "D001",
+        "title": "Synthetic test note",
+        "document_date": null,
+        "language": "en",
+        "format": "pdf",
+        "content_base64": "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFs0IDAgUiA2IDAgUl0gL0NvdW50IDIgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhID4+CmVuZG9iago0IDAgb2JqCjw8IC9UeXBlIC9QYWdlIC9QYXJlbnQgMiAwIFIgL01lZGlhQm94IFswIDAgNjEyIDc5Ml0gL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgMyAwIFIgPj4gPj4gL0NvbnRlbnRzIDUgMCBSID4+CmVuZG9iago1IDAgb2JqCjw8IC9MZW5ndGggMTg3ID4+CnN0cmVhbQpCVCAvRjEgMTEgVGYgMTQgVEwgNzIgNzIwIFRkIChTeW50aGV0aWMgdGVzdCBub3RlIC0gREVNTyBmaXh0dXJlIG9ubHksIG5vdCBhIHJlYWwgdGVjaG5pY2FsIHJlcG9ydC4pIFRqIFQqICgpIFRqIFQqIChBIHN5bnRoZXRpYyBwcm90b3R5cGUgd2FzIHRlc3RlZCBpbiBhIGxhYm9yYXRvcnkgd2F0ZXIgdGFuay4pIFRqIFQqIEVUCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PCAvVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9NZWRpYUJveCBbMCAwIDYxMiA3OTJdIC9SZXNvdXJjZXMgPDwgL0ZvbnQgPDwgL0YxIDMgMCBSID4+ID4+IC9Db250ZW50cyA3IDAgUiA+PgplbmRvYmoKNyAwIG9iago8PCAvTGVuZ3RoIDEyMyA+PgpzdHJlYW0KQlQgL0YxIDExIFRmIDE0IFRMIDcyIDcyMCBUZCAoUmVzdWx0cykgVGogVCogKCkgVGogVCogKE1lYXN1cmVkIHJlc3VsdHMgYW5kIGFjY2VwdGFuY2UgY3JpdGVyaWEgYXJlIG5vdCBzdXBwbGllZC4pIFRqIFQqIEVUCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDgKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDEyMSAwMDAwMCBuIAowMDAwMDAwMTkxIDAwMDAwIG4gCjAwMDAwMDAzMTcgMDAwMDAgbiAKMDAwMDAwMDU1NSAwMDAwMCBuIAowMDAwMDAwNjgxIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgOCAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKODU1CiUlRU9GCg==",
+        "sha256": "81df1bc72e82675f5ed2b05639711502be57466ca0b7fd5e4ea8b0271c9d7dd5"
+      }
+    ]
+  }
+}

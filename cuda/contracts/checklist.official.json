@@ -1,0 +1,54 @@
+{
+  "version": "APCTT-2026-CHECKLIST-v1",
+  "official": true,
+  "criteria": [
+    {
+      "criterion_id": "APCTT-C01",
+      "description": "Basic principles (TRL 1): the report states the scientific or engineering principles on which the assessed technology is based, citing observations, studies or literature."
+    },
+    {
+      "criterion_id": "APCTT-C02",
+      "description": "Concept formulated (TRL 2): the report describes a practical application of those principles and how the assessed technology is intended to work in it."
+    },
+    {
+      "criterion_id": "APCTT-C03",
+      "description": "Proof of concept (TRL 3): the report presents analytical or laboratory results that demonstrate the critical function or characteristic of the assessed technology."
+    },
+    {
+      "criterion_id": "APCTT-C04",
+      "description": "Laboratory validation (TRL 4): the report states that the assessed component or a low-fidelity breadboard was tested in a laboratory environment and reports the results."
+    },
+    {
+      "criterion_id": "APCTT-C05",
+      "description": "Relevant-environment validation (TRL 5): the report states that the assessed component or breadboard was tested in a simulated or relevant environment representative of the intended environment, and reports the results."
+    },
+    {
+      "criterion_id": "APCTT-C06",
+      "description": "Prototype in relevant environment (TRL 6): the report states that a representative model or prototype of the assessed system or subsystem was demonstrated in a relevant environment."
+    },
+    {
+      "criterion_id": "APCTT-C07",
+      "description": "Prototype in operational environment (TRL 7): the report states that a prototype close to the final configuration was demonstrated in the actual operational environment."
+    },
+    {
+      "criterion_id": "APCTT-C08",
+      "description": "System qualified (TRL 8): the report states that the final system was completed and qualified through test and demonstration against its requirements."
+    },
+    {
+      "criterion_id": "APCTT-C09",
+      "description": "Proven in operation (TRL 9): the report states that the final system was used successfully in actual operations or deployment over a stated period."
+    },
+    {
+      "criterion_id": "APCTT-C10",
+      "description": "Quantified results against requirements: the report compares measured performance with stated requirements or acceptance criteria and says whether they were met."
+    },
+    {
+      "criterion_id": "APCTT-C11",
+      "description": "Environment and test article defined: the report describes the test conditions and the configuration or fidelity of the tested article (for example breadboard, prototype, production unit) relative to the intended application."
+    },
+    {
+      "criterion_id": "APCTT-C12",
+      "description": "Evidence matches the assessment target: the cited evidence concerns the assessed target itself (component, subsystem, system or technology), not a different element or only the parent project as a whole."
+    }
+  ]
+}

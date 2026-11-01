@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "APCTT submission.json (apctt-submission-v3)",
+  "description": "The identity file of a minimal Stage 1 submission zip (decisions D59, D64): who submits which package, for the common base environment of this kit. tools/make_submission.py fills declared_package_sha256. models lists the catalogue models the module uses (catalog_id, from contracts/model-catalog.json) and the weights the team ships in the bundle as team-trained (path; a fine-tune or adapter of a catalogue model names it in base_model). The same rules apply to every team and every submission.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "submission_version",
+    "team",
+    "package_id",
+    "package_version",
+    "base_id",
+    "declared_package_sha256",
+    "license",
+    "compute",
+    "settings"
+  ],
+  "properties": {
+    "submission_version": {"const": "apctt-submission-v3"},
+    "team": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"},
+    "package_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"},
+    "package_version": {"type": "string", "minLength": 1, "maxLength": 64},
+    "base_id": {
+      "type": "string",
+      "pattern": "^apctt-base-[0-9a-f]{12}$",
+      "description": "the common base environment the module was built for: base_id of this kit's contracts/base-environment.json"
+    },
+    "entrypoint": {
+      "const": "participant_module.adapter:AssessmentModule",
+      "description": "fixed; may be left out"
+    },
+    "declared_package_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "the kit's package hash of participant_module/ and assets/; written by tools/make_submission.py"
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "MIT (decision D72), the same licence as participant_module/LICENSE"
+    },
+    "compute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["device"],
+      "properties": {
+        "device": {"enum": ["cpu", "cuda:0"]},
+        "precision": {"type": "string", "minLength": 1, "maxLength": 32}
+      }
+    },
+    "settings": {
+      "type": "object",
+      "description": "passed to load() as config[\"module\"][\"settings\"]"
+    },
+    "models": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "catalog_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+            "maxLength": 80,
+            "description": "a model of contracts/model-catalog.json; the organizer provides it in APCTT_MODEL_STORE"
+          },
+          "name": {"type": "string", "minLength": 1, "maxLength": 200},
+          "path": {
+            "type": "string",
+            "pattern": "^(assets|participant_module)/[^\\\\]+$",
+            "description": "team-trained weights: the file or folder inside the bundle"
+          },
+          "team_trained": {"const": true},
+          "base_model": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+            "maxLength": 80,
+            "description": "for a fine-tune or adapter: the catalog_id of the catalogue model it was made from"
+          },
+          "license": {"type": "string", "minLength": 1, "maxLength": 200},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "description": {"type": "string", "maxLength": 1000}
+        },
+        "if": {"required": ["team_trained"]},
+        "then": {"required": ["name", "path"]},
+        "else": {"required": ["catalog_id"]}
+      }
+    }
+  }
+}

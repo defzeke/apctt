@@ -1,0 +1,675 @@
+{
+  "record_version": "apctt-base-environment-v1",
+  "decision": "D60",
+  "base_id": "apctt-base-9e7fe1324bb6",
+  "python": "3.12",
+  "platform": "x86_64-manylinux_2_28",
+  "files": {
+    "input": {
+      "path": "requirements-base.in",
+      "sha256": "6c7d080b8c8aa19cc8e51b9765800b8010e136a4c70836d7314f37f9e3e9f30e"
+    },
+    "lock": {
+      "path": "requirements-base.lock",
+      "sha256": "9e7fe1324bb6f4431277a75c5a048fdd9fdee97ec6c0d0a262d09dc35109b9de"
+    },
+    "constraints": {
+      "path": "constraints-base.txt",
+      "sha256": "03f8df1f078195d886bab5d716653c77c36e1ce4c47a3204b74381871f0f622c"
+    },
+    "overrides": {
+      "path": "overrides-base.txt",
+      "sha256": "2b11a4b98c641be7f2f10380bc75c658b7b24754a237901aa528a59f341ab646"
+    }
+  },
+  "torch": {
+    "cuda": {
+      "requirement": "torch==2.11.0+cu128",
+      "find_links": "https://download.pytorch.org/whl/cu128/torch/"
+    },
+    "cpu_dev": {
+      "darwin": {
+        "requirement": "torch===2.11.0",
+        "find_links": null
+      },
+      "linux": {
+        "requirement": "torch===2.11.0+cpu",
+        "find_links": "https://download.pytorch.org/whl/cpu/torch/"
+      }
+    }
+  },
+  "cuda_only_patterns": [
+    "triton",
+    "nvidia-*",
+    "cuda-*"
+  ],
+  "packages": {
+    "accelerate": {
+      "version": "1.15.0",
+      "modules": [
+        "accelerate"
+      ]
+    },
+    "annotated-doc": {
+      "version": "0.0.5",
+      "modules": [
+        "annotated_doc"
+      ]
+    },
+    "annotated-types": {
+      "version": "0.8.0",
+      "modules": [
+        "annotated_types"
+      ]
+    },
+    "anyio": {
+      "version": "4.15.1",
+      "modules": [
+        "anyio"
+      ]
+    },
+    "bitsandbytes": {
+      "version": "0.50.2",
+      "modules": [
+        "bitsandbytes"
+      ]
+    },
+    "certifi": {
+      "version": "2026.7.22",
+      "modules": [
+        "certifi"
+      ]
+    },
+    "cffi": {
+      "version": "2.1.1",
+      "modules": [
+        "_cffi_backend",
+        "cffi"
+      ]
+    },
+    "charset-normalizer": {
+      "version": "3.5.2",
+      "modules": [
+        "charset_normalizer"
+      ]
+    },
+    "click": {
+      "version": "8.5.0",
+      "modules": [
+        "click"
+      ]
+    },
+    "cloudpickle": {
+      "version": "3.1.2",
+      "modules": [
+        "cloudpickle"
+      ]
+    },
+    "cryptography": {
+      "version": "50.0.2",
+      "modules": [
+        "cryptography"
+      ]
+    },
+    "cuda-bindings": {
+      "version": "12.9.7",
+      "modules": [
+        "cuda"
+      ]
+    },
+    "cuda-pathfinder": {
+      "version": "1.6.0",
+      "modules": [
+        "cuda"
+      ]
+    },
+    "cuda-toolkit": {
+      "version": "12.8.1",
+      "modules": []
+    },
+    "fastapi": {
+      "version": "0.141.1",
+      "modules": [
+        "fastapi"
+      ]
+    },
+    "filelock": {
+      "version": "3.32.3",
+      "modules": [
+        "filelock"
+      ]
+    },
+    "flatbuffers": {
+      "version": "25.12.19",
+      "modules": [
+        "flatbuffers"
+      ]
+    },
+    "fsspec": {
+      "version": "2026.7.0",
+      "modules": [
+        "fsspec"
+      ]
+    },
+    "h11": {
+      "version": "0.16.0",
+      "modules": [
+        "h11"
+      ]
+    },
+    "hf-xet": {
+      "version": "1.7.0",
+      "modules": [
+        "hf_xet"
+      ]
+    },
+    "httpcore": {
+      "version": "1.0.9",
+      "modules": [
+        "httpcore"
+      ]
+    },
+    "httpcore2": {
+      "version": "2.13.1",
+      "modules": [
+        "httpcore2"
+      ]
+    },
+    "httpx": {
+      "version": "0.28.1",
+      "modules": [
+        "httpx"
+      ]
+    },
+    "httpx2": {
+      "version": "2.13.1",
+      "modules": [
+        "httpx2"
+      ]
+    },
+    "huggingface-hub": {
+      "version": "2.2.0",
+      "modules": [
+        "huggingface_hub"
+      ]
+    },
+    "idna": {
+      "version": "3.20",
+      "modules": [
+        "idna"
+      ]
+    },
+    "jinja2": {
+      "version": "3.1.6",
+      "modules": [
+        "jinja2"
+      ]
+    },
+    "joblib": {
+      "version": "1.6.0",
+      "modules": [
+        "joblib"
+      ]
+    },
+    "markdown-it-py": {
+      "version": "4.2.0",
+      "modules": [
+        "markdown_it"
+      ]
+    },
+    "markupsafe": {
+      "version": "3.0.3",
+      "modules": [
+        "markupsafe"
+      ]
+    },
+    "mdurl": {
+      "version": "0.1.2",
+      "modules": [
+        "mdurl"
+      ]
+    },
+    "mpmath": {
+      "version": "1.3.0",
+      "modules": [
+        "mpmath"
+      ]
+    },
+    "narwhals": {
+      "version": "2.26.0",
+      "modules": [
+        "narwhals"
+      ]
+    },
+    "networkx": {
+      "version": "3.6.1",
+      "modules": [
+        "networkx"
+      ]
+    },
+    "numpy": {
+      "version": "2.5.3",
+      "modules": [
+        "numpy",
+        "numpy.libs"
+      ]
+    },
+    "nvidia-cublas-cu12": {
+      "version": "12.8.4.1",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cuda-cupti-cu12": {
+      "version": "12.8.90",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cuda-nvrtc-cu12": {
+      "version": "12.8.93",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cuda-runtime-cu12": {
+      "version": "12.8.90",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cudnn-cu12": {
+      "version": "9.19.0.56",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cufft-cu12": {
+      "version": "11.3.3.83",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cufile-cu12": {
+      "version": "1.13.1.3",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-curand-cu12": {
+      "version": "10.3.9.90",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cusolver-cu12": {
+      "version": "11.7.3.90",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cusparse-cu12": {
+      "version": "12.5.8.93",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-cusparselt-cu12": {
+      "version": "0.7.1",
+      "modules": [
+        "nvidia/cusparselt"
+      ]
+    },
+    "nvidia-nccl-cu12": {
+      "version": "2.28.9",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-nvjitlink-cu12": {
+      "version": "12.8.93",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-nvshmem-cu12": {
+      "version": "3.4.5",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "nvidia-nvtx-cu12": {
+      "version": "12.8.90",
+      "modules": [
+        "nvidia"
+      ]
+    },
+    "onnxruntime": {
+      "version": "1.31.0",
+      "modules": [
+        "onnxruntime"
+      ]
+    },
+    "opencv-python-headless": {
+      "version": "5.0.0.93",
+      "modules": [
+        "cv2"
+      ]
+    },
+    "packaging": {
+      "version": "26.3",
+      "modules": [
+        "packaging"
+      ]
+    },
+    "pandas": {
+      "version": "3.0.6",
+      "modules": [
+        "pandas"
+      ]
+    },
+    "pdfminer-six": {
+      "version": "20260107",
+      "modules": [
+        "pdfminer"
+      ]
+    },
+    "pdfplumber": {
+      "version": "0.11.10",
+      "modules": [
+        "pdfplumber"
+      ]
+    },
+    "peft": {
+      "version": "0.21.2",
+      "modules": [
+        "peft"
+      ]
+    },
+    "pillow": {
+      "version": "12.3.0",
+      "modules": [
+        "PIL"
+      ]
+    },
+    "protobuf": {
+      "version": "7.36.2",
+      "modules": [
+        "google"
+      ]
+    },
+    "psutil": {
+      "version": "7.2.2",
+      "modules": [
+        "psutil"
+      ]
+    },
+    "pyclipper": {
+      "version": "1.4.0",
+      "modules": [
+        "pyclipper"
+      ]
+    },
+    "pycparser": {
+      "version": "3.11",
+      "modules": [
+        "pycparser"
+      ]
+    },
+    "pydantic": {
+      "version": "2.13.5",
+      "modules": [
+        "pydantic"
+      ]
+    },
+    "pydantic-core": {
+      "version": "2.46.5",
+      "modules": [
+        "pydantic_core"
+      ]
+    },
+    "pygments": {
+      "version": "2.21.0",
+      "modules": [
+        "pygments"
+      ]
+    },
+    "pypdf": {
+      "version": "6.19.0",
+      "modules": [
+        "pypdf"
+      ]
+    },
+    "pypdfium2": {
+      "version": "5.14.0",
+      "modules": [
+        "pypdfium2",
+        "pypdfium2_cfg",
+        "pypdfium2_cli",
+        "pypdfium2_raw"
+      ]
+    },
+    "python-dateutil": {
+      "version": "2.9.0.post0",
+      "modules": [
+        "dateutil"
+      ]
+    },
+    "python-multipart": {
+      "version": "0.0.32",
+      "modules": [
+        "multipart",
+        "python_multipart"
+      ]
+    },
+    "pyyaml": {
+      "version": "6.0.3",
+      "modules": [
+        "_yaml",
+        "yaml"
+      ]
+    },
+    "rapidocr-onnxruntime": {
+      "version": "1.4.4",
+      "modules": [
+        "rapidocr_onnxruntime"
+      ]
+    },
+    "regex": {
+      "version": "2026.9.29",
+      "modules": [
+        "regex"
+      ]
+    },
+    "rich": {
+      "version": "15.0.0",
+      "modules": [
+        "rich"
+      ]
+    },
+    "safetensors": {
+      "version": "0.8.0",
+      "modules": [
+        "safetensors"
+      ]
+    },
+    "scikit-learn": {
+      "version": "1.9.1",
+      "modules": [
+        "scikit_learn.libs",
+        "sklearn"
+      ]
+    },
+    "scipy": {
+      "version": "1.18.1",
+      "modules": [
+        "scipy",
+        "scipy.libs"
+      ]
+    },
+    "sentence-transformers": {
+      "version": "5.7.0",
+      "modules": [
+        "sentence_transformers"
+      ]
+    },
+    "setuptools": {
+      "version": "78.1.0",
+      "modules": [
+        "_distutils_hack",
+        "pkg_resources",
+        "setuptools"
+      ]
+    },
+    "shapely": {
+      "version": "2.2.0",
+      "modules": [
+        "shapely",
+        "shapely.libs"
+      ]
+    },
+    "shellingham": {
+      "version": "1.5.4",
+      "modules": [
+        "shellingham"
+      ]
+    },
+    "six": {
+      "version": "1.17.0",
+      "modules": [
+        "six"
+      ]
+    },
+    "starlette": {
+      "version": "1.7.0",
+      "modules": [
+        "starlette"
+      ]
+    },
+    "sympy": {
+      "version": "1.14.0",
+      "modules": [
+        "isympy",
+        "sympy"
+      ]
+    },
+    "threadpoolctl": {
+      "version": "3.7.0",
+      "modules": [
+        "threadpoolctl"
+      ]
+    },
+    "tokenizers": {
+      "version": "0.23.3",
+      "modules": [
+        "tokenizers"
+      ]
+    },
+    "torch": {
+      "version": "2.11.0+cu128",
+      "modules": [
+        "functorch",
+        "torch",
+        "torchgen"
+      ]
+    },
+    "tqdm": {
+      "version": "4.70.1",
+      "modules": [
+        "tqdm"
+      ]
+    },
+    "transformers": {
+      "version": "5.19.0",
+      "modules": [
+        "transformers"
+      ]
+    },
+    "triton": {
+      "version": "3.6.0",
+      "modules": [
+        "triton"
+      ]
+    },
+    "truststore": {
+      "version": "0.10.4",
+      "modules": [
+        "truststore"
+      ]
+    },
+    "typer": {
+      "version": "0.27.3",
+      "modules": [
+        "typer"
+      ]
+    },
+    "typing-extensions": {
+      "version": "4.16.0",
+      "modules": [
+        "typing_extensions"
+      ]
+    },
+    "typing-inspection": {
+      "version": "0.4.4",
+      "modules": [
+        "typing_inspection"
+      ]
+    },
+    "uvicorn": {
+      "version": "0.54.0",
+      "modules": [
+        "uvicorn"
+      ]
+    }
+  },
+  "measured": {
+    "date": "2026-10-10",
+    "lock_sha256": "9e7fe1324bb6f4431277a75c5a048fdd9fdee97ec6c0d0a262d09dc35109b9de",
+    "platform": "Linux x86_64 wheels (pip download), installed with uv --target",
+    "wheel_count": 94,
+    "wheel_bytes": 4228271211,
+    "wheel_bytes_torch_and_cuda": 3943842400,
+    "wheel_bytes_other": 284428811,
+    "installed_bytes": 7668158592,
+    "installed_bytes_with_bytecode": 7957686153,
+    "licences": {
+      "tool": "tools/check_licenses.py (wheel metadata, Stage 2 scope: only D52 packages denied)",
+      "policy_version": "0.3.0",
+      "wheels": 94,
+      "allowed": 73,
+      "review": [
+        {
+          "name": "pypdfium2",
+          "version": "5.14.0",
+          "license": "BSD-3-Clause, Apache-2.0, dependency licenses",
+          "reasons": [
+            "unrecognised licence string \"BSD-3-Clause, Apache-2.0, dependency licenses\""
+          ]
+        }
+      ],
+      "denied_d52_installed_by_organizer": [
+        "cuda-bindings",
+        "cuda-pathfinder",
+        "cuda-toolkit",
+        "nvidia-cublas-cu12",
+        "nvidia-cuda-cupti-cu12",
+        "nvidia-cuda-nvrtc-cu12",
+        "nvidia-cuda-runtime-cu12",
+        "nvidia-cudnn-cu12",
+        "nvidia-cufft-cu12",
+        "nvidia-cufile-cu12",
+        "nvidia-curand-cu12",
+        "nvidia-cusolver-cu12",
+        "nvidia-cusparse-cu12",
+        "nvidia-cusparselt-cu12",
+        "nvidia-nccl-cu12",
+        "nvidia-nvjitlink-cu12",
+        "nvidia-nvshmem-cu12",
+        "nvidia-nvtx-cu12",
+        "torch",
+        "triton"
+      ],
+      "denied_other": []
+    }
+  }
+}

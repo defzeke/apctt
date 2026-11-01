@@ -121,14 +121,14 @@ def main(argv: list[str] | None = None) -> int:
                         help="HF repo id or a local folder (e.g. the model store path)")
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--out", type=Path, default=None)
-    parser.add_argument("--max-len", type=int, default=1536)
+    parser.add_argument("--max-len", type=int, default=896)
     parser.add_argument("--epochs", type=float, default=3.0)
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--r", type=int, default=16)
     parser.add_argument("--alpha", type=int, default=32)
     parser.add_argument("--batch", type=int, default=1)
     parser.add_argument("--grad-accum", type=int, default=8)
-    parser.add_argument("--optim", default="paged_adamw_8bit",
+    parser.add_argument("--optim", default="adamw_torch",
                         help="paged_adamw_8bit, adamw_torch, adamw_8bit")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--dry-run", action="store_true",

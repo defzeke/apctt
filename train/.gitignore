@@ -1,0 +1,6 @@
+data/pdfs/
+data/*.jsonl
+data/*.arrow
+data/*.lock
+out/
+__pycache__/

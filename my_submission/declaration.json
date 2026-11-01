@@ -1,0 +1,75 @@
+{
+  "declaration_version": "apctt-declaration-v1",
+  "example_only": false,
+  "team": "CICA",
+  "package_id": "cica-usgs-trl-assessor",
+  "package_version": "0.1.0",
+  "declared_package_sha256": "48a70007d8e477474c8704ce299b1867d60969423020a17ecd6e9abef37b1d22",
+  "team_training": "team_trained_qlora_adapter",
+  "training": {
+    "code": "train/build_data.py, train/train_qlora.py (not shipped in the submission zip; handover by repository version)",
+    "method": "QLoRA (4-bit NF4 base) with TRL SFTTrainer and PEFT",
+    "base_model": "smollm3-3b-nf4 (HuggingFaceTB/SmolLM3-3B, revision a07cc9a04f16550a088caea529712d1d335b0ac1)",
+    "configuration": {
+      "records": 74,
+      "epochs": 3,
+      "max_len": 896,
+      "lora_r": 8,
+      "lora_alpha": 32,
+      "lora_dropout": 0.05,
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "batch": 1,
+      "grad_accum": 4,
+      "learning_rate": 0.0002,
+      "optimizer": "adamw_torch",
+      "seed": 42,
+      "compute_dtype": "bfloat16"
+    },
+    "hardware": "NVIDIA GeForce RTX 3050 6 GB, WSL2 Ubuntu 22.04, torch 2.11.0+cu128, Python 3.12",
+    "labels": "organizer-estimated TRL from the public USGS sheet; not expert gold",
+    "output": "assets/smollm3-trl-lora (adapter_model.safetensors, 60,523,464 bytes)"
+  },
+  "data_sources": [
+    {
+      "source": "APCTT public sample cases and the USGS PDFs they reference (contracts/public-cases.json, USGS reports)",
+      "version": "apctt-public-cases-v1, kit 0.5.0",
+      "date": "2026-11-01",
+      "role": "Development, prompt and rule tuning, and public-case evaluation of the assessment module",
+      "label_origin": "Organizer's estimated TRL per report; not expert labels and not the hidden-case labels",
+      "linked_project": "None; the 99 public reports are listed individually in contracts/public-cases.json",
+      "license": "U.S. public domain (USGS); some figures are third-party, see the manifest's licence_note"
+    },
+    {
+      "source": "USGS reports used to fine-tune the optional TRL adapter (74 of the public cases, split by SDG target)",
+      "version": "apctt-public-cases-v1 PDFs, checked by SHA-256",
+      "date": "2026-11-01",
+      "role": "Supervised fine-tuning of the QLoRA adapter; validation on a held-out SDG 14 split and on a stratified random split",
+      "label_origin": "Organizer's estimated TRL from the public sheet, used as the target label; not expert gold",
+      "linked_project": "None",
+      "license": "U.S. public domain (USGS); some figures are third-party, see the manifest's licence_note"
+    }
+  ],
+  "inference_assets": {
+    "source_code": "participant_module/ (adapter.py, extract.py, rules.py, llm.py; package hash in submission.json)",
+    "weights": [
+      "assets/smollm3-trl-lora/adapter_model.safetensors (team-trained QLoRA adapter, MIT)"
+    ],
+    "prompts_or_rules": [
+      "participant_module/rules.py (criterion rules matched by checklist description, not by ID)"
+    ],
+    "reference_assets": [],
+    "dependency_declarations": [
+      "the common base environment apctt-base-9e7fe1324bb6 (pypdfium2, torch, transformers, peft, bitsandbytes)",
+      "catalogue model smollm3-3b-nf4 (only loaded when settings.use_llm is true)"
+    ]
+  },
+  "notes": "The shipped default is CPU rules-only (settings.use_llm=false): pypdfium2 text extraction, sentence filtering, description-matched criteria rules with page-and-span evidence. The adapter is bundled and declared but disabled because it did not beat the rules-only TRL prior on the held-out SDG 14 public split (0.68 vs 0.70 mean part-A score). No NASA TechPort data was used."
+}

@@ -1,0 +1,30 @@
+{
+  "submission_version": "apctt-submission-v3",
+  "team": "CICA",
+  "package_id": "cica-usgs-trl-assessor",
+  "package_version": "0.1.0",
+  "base_id": "apctt-base-9e7fe1324bb6",
+  "declared_package_sha256": "48a70007d8e477474c8704ce299b1867d60969423020a17ecd6e9abef37b1d22",
+  "license": "MIT",
+  "compute": {
+    "device": "cpu",
+    "precision": "float32"
+  },
+  "settings": {
+    "use_llm": false,
+    "max_pages": 300
+  },
+  "models": [
+    {
+      "catalog_id": "smollm3-3b-nf4"
+    },
+    {
+      "name": "smollm3-trl-lora",
+      "path": "assets/smollm3-trl-lora",
+      "team_trained": true,
+      "base_model": "smollm3-3b-nf4",
+      "license": "MIT",
+      "description": "QLoRA r=8 adapter (3 epochs, 74 USGS reports, seed 42) used by the optional CUDA refinement path; disabled by default."
+    }
+  ]
+}

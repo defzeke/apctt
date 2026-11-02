@@ -272,7 +272,8 @@ double quant, bf16 compute). The pattern is also visible in
 ## 12. Shipped module (v0.1.0)
 
 `my_submission/` is packed as `train/out/CICA_submission.zip` (60.5 MB, package hash
-`48a70007d8e477474c8704ce299b1867d60969423020a17ecd6e9abef37b1d22`).
+`d030430f18f1582cd9aa31d2cb202af65786176d6a308bbc05e9d4aad7d75588`, zip hash
+`72a90d9ca1081f3432aad048165ee515f9434b8716157fdd18f4a84eb18f24b2`).
 
 - CPU rules-only by default (`settings.use_llm = false`): pypdfium2 page text,
   header/footer/caption/reference filtering, description-matched criteria rules,
@@ -284,6 +285,10 @@ double quant, bf16 compute). The pattern is also visible in
   0 invalid, 7.26 met criteria, 11.4 spans, 1.9 s, 0.26 GiB.
 - Module source: `participant_module/{adapter,extract,rules,llm}.py`; no packages
   copied in; runtime deps come from the common base.
+- Adapter use and transfer: `train/USING_THE_ADAPTER.md` (standalone loading, prompt
+  format, hashes, handoff bundle, limits).
+- Any change to the model, data, results or package must follow `SKILLS.md` (documentation
+  and hash sync) and `AGENTS.md` (project context).
 
 ## 11. Files in this folder
 

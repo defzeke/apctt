@@ -72,3 +72,4 @@ cd cuda && python tools/get_public_cases.py --all --download --dir ../train/data
 - `evaluate.py` — exact / off-by-one / invalid JSON over a split
 - `infer_check.py` — single-case generation with timing and peak VRAM
 - `requirements-train.txt` — training-only dependencies (never shipped)
+- `USING_THE_ADAPTER.md` — how to run the adapter standalone and hand it to others

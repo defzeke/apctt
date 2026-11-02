@@ -73,3 +73,4 @@ cd cuda && python tools/get_public_cases.py --all --download --dir ../train/data
 - `infer_check.py` — single-case generation with timing and peak VRAM
 - `requirements-train.txt` — training-only dependencies (never shipped)
 - `USING_THE_ADAPTER.md` — how to run the adapter standalone and hand it to others
+- `TEST_PROMPTS.md` / `test_prompts.jsonl` — six labelled test prompts and how to run them

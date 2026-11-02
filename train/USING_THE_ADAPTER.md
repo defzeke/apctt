@@ -174,6 +174,10 @@ cd "/mnt/c/Github Projects/apctt"
 It prints the generated text, parsed JSON, whether the TRL matches, seconds and peak VRAM.
 A healthy run parses JSON and finishes in about 20 to 35 seconds on the RTX 3050.
 
+Ready-made prompts with known labels and recorded outputs: `train/TEST_PROMPTS.md` and
+`train/test_prompts.jsonl` (six cases; `infer_check.py --data train/test_prompts.jsonl
+--index N`, or score all six with `evaluate.py`).
+
 Score a whole split:
 
 ```bash

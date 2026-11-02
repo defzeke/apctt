@@ -131,6 +131,11 @@ MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 -- bash -lc 'cd "/mnt/c/Github Projects/a
 ~/.venvs/apctt-train/bin/python train/module_eval.py [--llm] [--only IDS] \
   --out train/out/module-eval.json
 
+# adapter test prompts (six labelled cases, see train/TEST_PROMPTS.md)
+~/.venvs/apctt-train/bin/python train/infer_check.py \
+  --adapter my_submission/assets/smollm3-trl-lora \
+  --data train/test_prompts.jsonl --index 0
+
 # pack and verify the submission
 PYTHONPATH=cuda/src ~/.venvs/apctt-train/bin/python cuda/tools/make_submission.py \
   my_submission --output train/out

@@ -30,7 +30,7 @@ Rules-only, `train/module_eval.py`:
 | off by one | 41 / 99 |
 | off by two or more | 4 / 99 |
 | invalid results | 0 |
-| mean wall time | 1.9 s per case |
+| mean wall time | 2.0 s per case |
 | peak RSS | 0.26 GiB |
 
 The public labels are overwhelmingly 6 (54 / 99), so the module predicts 6 unless the checklist

@@ -56,7 +56,7 @@ the hidden-case labels. Do not tune to them as truth.
 | rules only, `train/module_eval.py`, 99 public cases | 0.7525 mean A, 54 exact, 41 off-by-one, 4 off-by-two+, 0 invalid |
 | always predict 6 | 0.753 on 99 public, 0.70 on SDG 14 |
 | adapter cost | about 33 s cold load, 2.06 GiB peak VRAM, about 14 s/case integrated, 6.75 GiB RSS |
-| rules cost | 1.9 s/case, 0.26 GiB RSS |
+| rules cost | 2.0 s/case, 0.26 GiB RSS |
 
 `evaluate.py` and `module_eval.py` differ: `evaluate.py` feeds the full training prompt from
 `val.jsonl`; `module_eval.py` feeds excerpts from the PDF and uses the module path. Quote the
@@ -72,7 +72,8 @@ split. Do not re-enable it without new evidence.
 
 - `adapter.py` — entry point `AssessmentModule`; rules first, optional adapter refine, fallback to abstain.
 - `extract.py` — pypdfium2 page text; strips headers, footers, page numbers, captions,
-  reference lists, URLs, disclaimers, abbreviation lists.
+  reference lists, URLs, disclaimers, abbreviation lists, credit lines, map legends and
+  place-name lists.
 - `rules.py` — rules matched to criteria by official description (not by ID), candidate
   scoring, evidence selection, fill the TRL ladder up to the predicted level, target check.
 - `llm.py` — lazy 4-bit base + adapter loader; only used when `use_llm` is true.
@@ -89,8 +90,8 @@ The module config is `config["checklist"]` plus `config["module"]["settings"]`; 
 - `models`: catalogue `smollm3-3b-nf4` plus team-trained `assets/smollm3-trl-lora`
   (`base_model: smollm3-3b-nf4`).
 - Current artifact: `train/out/CICA_submission.zip`, 60.5 MB,
-  zip `sha256 72a90d9ca1081f3432aad048165ee515f9434b8716157fdd18f4a84eb18f24b2`,
-  package `sha256 d030430f18f1582cd9aa31d2cb202af65786176d6a308bbc05e9d4aad7d75588`.
+  zip `sha256 7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8`,
+  package `sha256 cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d`.
 - `make_submission.py` writes `declared_package_sha256` into `submission.json` and
   `declaration.json`. The package hash covers only `participant_module/` and `assets/`.
 - `--check` result: `VALID_WITH_REVIEW`. The only review items are the two dataset licence

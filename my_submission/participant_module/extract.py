@@ -25,15 +25,32 @@ _BOILERPLATE = re.compile(
     r"in cooperation with|suggested citation|references cited|"
     r"list of (?:figures|tables)|conversion factors|abbreviations|"
     r"acknowledg|for navigation or regulatory|funding for|provided funding|"
-    r"reader is referred|not intended|army corps of engineers)",
+    r"reader is referred|not intended|army corps of engineers|"
+    r"any use of trade|permission to reproduce|public domain|"
+    r"does not imply endorsement|information product)",
     re.IGNORECASE,
 )
 _CAPTION = re.compile(
     r"^(?:photograph|figure|table|map|graph|diagram|chart|image|photo|"
-    r"plate|appendix)\b",
+    r"plate|appendix|view)\b",
     re.IGNORECASE,
 )
 _ABBREVIATION = re.compile(r"^(?:[A-Z][A-Z0-9\-]{1,6})$")
+_CREDIT = re.compile(
+    r"(?:publishing service center|manuscript approved|edited by|layout and design|"
+    r"title and subtitle|cover photograph|prepared by)",
+    re.IGNORECASE,
+)
+_BYLINE = re.compile(r"\bBy [A-Z][a-z]+(?: [A-Z]\.)?\b")
+_PANEL = re.compile(r"^(?:\(?(?:top|bottom|left|right|upper|lower|inset)\b|[A-Z],\s)")
+_PLACES = re.compile(
+    r"\b[A-Z][a-z]+ (?:Canyon|Reservoir|Wash|Creek|River|Valley|Park|Lake)\b")
+_LEGEND = re.compile(
+    r"(?:EXPLANATION|MILES|KILOMETERS|Municipal boundary|Lake or reservoir|"
+    r"station number|Major rivers and streams|Minor rivers and streams|"
+    r"County line|Study area boundary|Freeway|Highway)",
+    re.IGNORECASE,
+)
 _MIN_WORDS = 6
 _MAX_CHARS = 420
 
@@ -88,6 +105,13 @@ def useful(text: str) -> bool:
         return False
     low = text.lower()
     if low.startswith(("source:", "credit:", "note:")) or _CAPTION.match(text):
+        return False
+    if low.startswith(("summary of", "comparison of")) and any(
+            term in low for term in ("water year", "table", "figure", "equation", "variable")):
+        return False
+    if _CREDIT.search(text) or _BYLINE.search(text) or _PANEL.match(text):
+        return False
+    if len(_LEGEND.findall(text)) >= 2 or len(_PLACES.findall(text)) >= 3:
         return False
     if _BOILERPLATE.search(low):
         return False

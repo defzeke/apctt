@@ -57,7 +57,7 @@ class AssessmentModule:
             sentences, self._assignments, case, pages)
 
         predicted, source = self._refine(case, findings, pages, predicted, context)
-        rules.ensure_levels(case, self._assignments, findings, predicted, sentences, pages)
+        rules.ensure_levels(self._assignments, findings, predicted)
 
         result = self._result(case, findings, predicted)
         if predicted is not None:

@@ -192,7 +192,7 @@ Two different handovers:
 
 - **The model alone** (for reuse, further training or review): the bundle below.
 - **The runnable submission** (what the organizer runs): `train/out/CICA_submission.zip`,
-  60.5 MB, zip SHA-256 `72a90d9ca1081f3432aad048165ee515f9434b8716157fdd18f4a84eb18f24b2`.
+  60.5 MB, zip SHA-256 `7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8`.
   It contains `participant_module/`, `assets/`, `submission.json`, `declaration.json` and
   `README.md`; run `cuda/tools/make_submission.py --check` on it after any change.
 

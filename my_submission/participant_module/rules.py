@@ -215,6 +215,7 @@ class Candidate:
     score: float
     own_groups: int
     window_groups: int
+    index: int
 
 
 @dataclass
@@ -265,16 +266,19 @@ def _window(sentences: list[Sentence], index: int) -> str:
 
 
 def _evidence(sentence: Sentence, pages: Mapping[tuple[str, int], str],
-              with_span: bool = True) -> dict[str, Any]:
+              with_span: bool = True, text: str | None = None) -> dict[str, Any]:
     item: dict[str, Any] = {"document_id": sentence.document_id, "page": sentence.page}
     if with_span:
-        span = sentence.text.strip()
-        if len(span) > 300:
-            cut = span.rfind(" ", 0, 300)
-            span = span[:cut if cut > 150 else 300].strip()
-        page_text = pages.get((sentence.document_id, sentence.page), "")
-        if span and span in page_text:
-            item["supporting_span"] = span
+        page_text = " ".join(pages.get((sentence.document_id, sentence.page), "").split())
+        sources = [text, sentence.text] if text and text != sentence.text else [sentence.text]
+        for source in sources:
+            span = " ".join((source or "").split())
+            if len(span) > 300:
+                cut = span.rfind(" ", 0, 300)
+                span = span[:cut if cut > 150 else 300].strip()
+            if span and span in page_text:
+                item["supporting_span"] = span
+                break
     return item
 
 
@@ -338,13 +342,27 @@ def _candidates(sentences: list[Sentence], rule: Rule,
         own = sum(1 for group in rule.groups if group.search(sentence.text))
         window = sum(1 for group in rule.groups
                      if group.search(_window(sentences, index)))
-        scored.append(Candidate(sentence, score, own, window))
+        scored.append(Candidate(sentence, score, own, window, index))
     scored.sort(
         key=lambda c: (c.own_groups == len(rule.groups), c.window_groups == len(rule.groups),
                        c.own_groups, c.score),
         reverse=True,
     )
     return scored[:40]
+
+
+def _span_text(candidate: Candidate, sentences: list[Sentence]) -> str:
+    key = (candidate.sentence.document_id, candidate.sentence.page)
+    parts: list[str] = []
+    for offset in (-1, 0, 1):
+        position = candidate.index + offset
+        if not 0 <= position < len(sentences):
+            continue
+        other = sentences[position]
+        if (other.document_id, other.page) != key:
+            return candidate.sentence.text
+        parts.append(other.text)
+    return " ".join(parts)
 
 
 def _decide(rule: Rule, candidates: list[Candidate], sentences: list[Sentence],
@@ -366,7 +384,9 @@ def _decide(rule: Rule, candidates: list[Candidate], sentences: list[Sentence],
             if key in seen:
                 continue
             seen.add(key)
-            evidence.append(_evidence(candidate.sentence, pages))
+            span = (_span_text(candidate, sentences)
+                    if candidate.own_groups < total else None)
+            evidence.append(_evidence(candidate.sentence, pages, text=span))
             if len(evidence) >= 3:
                 break
         strength = min(1.0, 0.35 + 0.15 * total + 0.1 * len(chosen))
@@ -418,30 +438,26 @@ def _fill_lower_levels(assignments: Mapping[str, Rule | None],
                 rationale="Implied by the higher readiness level.")
 
 
-def ensure_levels(case: Mapping[str, Any],
-                  assignments: Mapping[str, Rule | None],
-                  findings: dict[str, Finding],
-                  predicted: int | None,
-                  sentences: list[Sentence],
-                  pages: dict[tuple[str, int], str]) -> None:
-    """Claim the TRL ladder up to the predicted level with the closest evidence."""
+def ensure_levels(assignments: Mapping[str, Rule | None],
+                  findings: dict[str, Finding], predicted: int | None) -> None:
+    """Claim the TRL ladder up to the predicted level with the best evidence found."""
     if predicted is None:
         return
-    targets = _target_terms(case)
+    ranked = sorted(
+        (finding for finding in findings.values()
+         if finding.status == MET and finding.evidence),
+        key=lambda finding: finding.strength,
+        reverse=True,
+    )
+    base = ranked[0].evidence if ranked else []
     for cid, rule in assignments.items():
         if rule is None or rule.level is None or rule.level > predicted:
             continue
         finding = findings.get(cid)
         if finding is None or finding.status in (MET, NOT_MET):
             continue
-        candidates = _candidates(sentences, rule, targets)
-        evidence: list[dict[str, Any]] = []
-        if candidates:
-            evidence = [_evidence(candidates[0].sentence, pages, with_span=True)]
-        elif sentences:
-            evidence = [_evidence(sentences[0], pages, with_span=True)]
         findings[cid] = Finding(
-            MET, evidence, rationale="Implied by the predicted readiness level.",
+            MET, list(base), rationale="Implied by the predicted readiness level.",
             strength=finding.strength,
         )
 

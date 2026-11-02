@@ -4,7 +4,7 @@
   "package_id": "cica-usgs-trl-assessor",
   "package_version": "0.1.0",
   "base_id": "apctt-base-9e7fe1324bb6",
-  "declared_package_sha256": "d030430f18f1582cd9aa31d2cb202af65786176d6a308bbc05e9d4aad7d75588",
+  "declared_package_sha256": "cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d",
   "license": "MIT",
   "compute": {
     "device": "cpu",

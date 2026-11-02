@@ -272,17 +272,18 @@ double quant, bf16 compute). The pattern is also visible in
 ## 12. Shipped module (v0.1.0)
 
 `my_submission/` is packed as `train/out/CICA_submission.zip` (60.5 MB, package hash
-`d030430f18f1582cd9aa31d2cb202af65786176d6a308bbc05e9d4aad7d75588`, zip hash
-`72a90d9ca1081f3432aad048165ee515f9434b8716157fdd18f4a84eb18f24b2`).
+`cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d`, zip hash
+`7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8`).
 
 - CPU rules-only by default (`settings.use_llm = false`): pypdfium2 page text,
-  header/footer/caption/reference filtering, description-matched criteria rules,
-  TRL prior 6 with the ladder filled to that level, page-and-span evidence.
+  header/footer/caption/reference/credit/map-legend filtering, description-matched
+  criteria rules, TRL prior 6 with the ladder filled to that level, page-and-span
+  evidence (same-page window spans when a single sentence only partially matches).
 - Optional CUDA path loads `smollm3-3b-nf4` + the QLoRA adapter and trusts its TRL.
   It is bundled and declared but off: 0.68 vs 0.70 (rules) on the held-out SDG 14
   split, 14.3 s and 6.75 GiB per case.
 - Public-case results (rules): mean A 0.7525, 54 exact, 41 off-by-one, 4 off-by-two+,
-  0 invalid, 7.26 met criteria, 11.4 spans, 1.9 s, 0.26 GiB.
+  0 invalid, 7.2 met criteria, 14.4 spans, 2.0 s, 0.26 GiB.
 - Module source: `participant_module/{adapter,extract,rules,llm}.py`; no packages
   copied in; runtime deps come from the common base.
 - Adapter use and transfer: `train/USING_THE_ADAPTER.md` (standalone loading, prompt

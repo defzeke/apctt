@@ -91,3 +91,39 @@ changes the zip hash but not the package hash; repack and refresh the zip hash a
 - Do not claim a model file is shipped when only the adapter is shipped.
 - Do not enable the adapter by default without a new held-out result that beats the rules
   prior; if you do, update every status section listed in §2.
+
+## 7. Commit messages
+
+Format: `<type>(<scope>): <summary>` — imperative, lowercase, no trailing period, at most
+72 characters.
+
+| type | use for |
+|---|---|
+| `feat` | module behaviour, rules, extraction, packaging |
+| `fix` | a measured regression or a broken contract |
+| `eval` | evaluation harness or a new result JSON |
+| `data` | training data, splits, labels |
+| `docs` | docs only (AGENTS, HANDOFF, README, SKILLS) |
+| `chore` | repo hygiene, artifacts, gitignore |
+
+- One commit per iteration. Code, docs, hashes and result numbers land in the same commit.
+- The summary states the outcome, not the files touched. The body lists the behaviour
+  change, the measured score and the package/zip hashes when the bundle changed.
+- Never split a repack from the code change it contains.
+- Do not commit `train/out/`, `__pycache__` or `train/data/pdfs/`; they are build artifacts.
+  If they are already tracked, untrack them in a separate `chore(repo):` commit.
+- Stage only the source, docs and result JSON. Incidental `.pyc` edits are not part of the
+  iteration.
+
+Current iteration (2026-11-02, evidence hygiene and re-pack):
+
+```
+feat(module): tighten evidence extraction and TRL ladder filling
+
+- filter credit lines, bylines, panel labels, map legends and place lists
+- join same-page window spans and verify them on normalised page text
+- fill the TRL ladder from the best met evidence
+- 99 public cases: A 0.7525 (54 exact), 7.2 met, 14.4 spans, 2.0 s/case
+- package cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d
+- zip 7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8
+```

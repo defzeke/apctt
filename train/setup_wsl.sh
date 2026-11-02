@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # One-time training environment setup, run inside WSL2 Ubuntu.
-#   wsl -d Ubuntu-22.04 -- bash "/mnt/c/Github Projects/apctt/train/setup_wsl.sh"
+#   from Git Bash in the repository root:
+#   MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 --cd "$(cygpath -w "$PWD")" -- bash train/setup_wsl.sh
 set -euo pipefail
 
-REPO="/mnt/c/Github Projects/apctt"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV="$HOME/.venvs/apctt-train"
 export PATH="$HOME/.local/bin:$PATH"
 

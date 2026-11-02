@@ -35,6 +35,12 @@ Load the base with bitsandbytes NF4, apply this adapter with PEFT, and use the S
 chat template with `enable_thinking=False`. See `train/USING_THE_ADAPTER.md` in the
 project repository for a runnable example, the prompt format and the measured results.
 
+## Licence files
+
+`LICENSE` in this folder is the Apache-2.0 text of the SmolLM3-3B base and `NOTICE` carries
+its attribution. The adapter weights themselves are MIT; the MIT text is
+`participant_module/LICENSE` in the submission.
+
 ## Limits
 
 The adapter learned the public label prior (most cases are TRL 6) and rarely predicts 5 or

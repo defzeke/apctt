@@ -1,7 +1,7 @@
 # AGENTS.md — APCTT Stage 1 project context
 
 Read this before touching the fine-tune, the training data, the assessment module or the
-submission package. It is the state of the project as of 2026-11-02. Deeper detail lives in
+submission package. It is the state of the project as of 2026-11-03. Deeper detail lives in
 `train/HANDOFF.md` (training) and `train/USING_THE_ADAPTER.md` (adapter use and transfer).
 
 ## 1. Objective
@@ -29,8 +29,8 @@ the hidden-case labels. Do not tune to them as truth.
 | `cpu/` | kit variant not used by this team. |
 | `train/` | development workspace; never shipped. Data build, training, evaluation, handoff. |
 | `my_submission/` | the only directory packed into the submission zip. |
-| `train/data/pdfs/` | 99 public USGS PDFs, hash-checked, 1.1 GB. |
-| `train/out/` | adapters, eval JSON, packed zips; ignored by git. |
+| `train/data/pdfs/` | 99 public USGS PDFs, hash-checked, 1.1 GB; ignored by git; fetch from `cuda/` with `python tools/get_public_cases.py --all --download --dir ../train/data/pdfs`. |
+| `train/out/` | adapters, eval JSON, packed zips; ignored by git, so a fresh clone has none. Rebuild with §7. |
 | `USGS_SDG_open_data_set_corrected.xlsx` | organizer sheet used to build SFT labels. |
 
 ## 3. Base model and adapter
@@ -60,7 +60,13 @@ the hidden-case labels. Do not tune to them as truth.
 
 `evaluate.py` and `module_eval.py` differ: `evaluate.py` feeds the full training prompt from
 `val.jsonl`; `module_eval.py` feeds excerpts from the PDF and uses the module path. Quote the
-metric with the tool name.
+metric with the tool name. The module prompt (`participant_module/llm.py:build_prompt`) is also
+not the training prompt (`train/build_data.py:build_user_text`): it drops the report year from
+the `Report:` line and uses rule-selected excerpts instead of `pick_pages`. That skew is a
+likely part of the 0.72 vs 0.68 gap.
+
+The public-case JSON (`train/out/module-eval.json`) is from the 2026-11-02 run on the training
+laptop and is not in git. The rules have not changed since; regenerate it after a fresh clone.
 
 ## 4. Current shipped behaviour
 
@@ -76,7 +82,8 @@ split. Do not re-enable it without new evidence.
   place-name lists.
 - `rules.py` — rules matched to criteria by official description (not by ID), candidate
   scoring, evidence selection, fill the TRL ladder up to the predicted level, target check.
-- `llm.py` — lazy 4-bit base + adapter loader; only used when `use_llm` is true.
+- `llm.py` — lazy 4-bit base + adapter loader; only used when `use_llm` is true. The code
+  default is `false` too, so a config without `settings` stays rules-only.
 - TRL policy: predict 6 when any criterion is met, because the public prior is 6; evidence is
   used for B/C, not for a raw TRL ladder. Levels 7-9 require independent matches.
 
@@ -90,29 +97,40 @@ The module config is `config["checklist"]` plus `config["module"]["settings"]`; 
 - `models`: catalogue `smollm3-3b-nf4` plus team-trained `assets/smollm3-trl-lora`
   (`base_model: smollm3-3b-nf4`).
 - Current artifact: `train/out/CICA_submission.zip`, 60.5 MB,
-  zip `sha256 7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8`,
-  package `sha256 cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d`.
+  zip `sha256 6d1e8831d33ba2c324137724412af504a8fbae4e99c624403b061e4a45d35cb4`,
+  package `sha256 fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c`
+  (packed 2026-11-03 from LF files; the pack is deterministic, so a repack of the same
+  files gives the same hashes).
 - `make_submission.py` writes `declared_package_sha256` into `submission.json` and
-  `declaration.json`. The package hash covers only `participant_module/` and `assets/`.
+  `declaration.json`. The package hash covers only `participant_module/` and `assets/`, as
+  raw bytes: CRLF line endings change it (see §8).
 - `--check` result: `VALID_WITH_REVIEW`. The only review items are the two dataset licence
   strings (`U.S. public domain (USGS); ...`), which the licence checker cannot map to an SPDX
   id. That is expected.
-- Adapter-only handoff bundle: `train/out/CICA_smollm3-trl-lora.zip`, 55,990,894 bytes,
-  `sha256 9078fb494e82fd4cffec98efc5634c1e5746c3179a25b90323253cd298368828`.
+- Adapter-only handoff bundle: `train/out/CICA_smollm3-trl-lora.zip`, built by
+  `python train/pack_adapter.py` (deterministic), 55,940,109 bytes,
+  `sha256 e3587449e80dfdbed36728fd43190583d506861bb17dcb854d1c8ef2d2f0e612`.
 
 ## 6. Environment
 
-- Windows host + WSL2 Ubuntu 22.04; RTX 3050 6 GB; 16 GB RAM (WSL capped at 7.7 GB + 2 GB swap).
+- Training laptop: Windows host + WSL2 Ubuntu 22.04; RTX 3050 6 GB; 16 GB RAM (WSL capped at
+  7.7 GB + 2 GB swap); repo at `/mnt/c/Github Projects/apctt` there.
 - Training venv: `~/.venvs/apctt-train` with Python 3.12, torch 2.11.0+cu128,
-  transformers 5.19.0, peft 0.21.2, bitsandbytes 0.50.2, TRL, datasets.
+  transformers 5.22.1 (resolved from `>=5.19`), peft 0.21.2, bitsandbytes 0.50.2, TRL,
+  datasets. The event base environment pins transformers 5.19.0
+  (`cuda/constraints-base.txt`); test the adapter path against that before enabling it.
 - `pydantic 2.14.2` was installed only for local `apctt_contracts` validation.
 - Run GPU work inside WSL, not the Windows Python.
+- Packing (`make_submission.py`, `train/pack_adapter.py`) needs only the standard library and
+  runs with any Windows or WSL Python. `module_eval.py` needs `pypdfium2` and `pydantic`, and
+  imports the Unix-only `resource` module, so it runs in WSL.
+- Do not hard-code the clone path. Commands below run from the repository root.
 
 ## 7. Commands
 
 ```bash
-# all WSL calls from Git Bash need this prefix
-MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 -- bash -lc 'cd "/mnt/c/Github Projects/apctt" && <cmd>'
+# WSL calls from Git Bash, started in the repository root
+MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 --cd "$(cygpath -w "$PWD")" -- bash -lc '<cmd>'
 
 # rebuild data (SDG 14 holdout, the shipped split)
 ~/.venvs/apctt-train/bin/python train/build_data.py --holdout-sdg 14
@@ -142,6 +160,9 @@ PYTHONPATH=cuda/src ~/.venvs/apctt-train/bin/python cuda/tools/make_submission.p
   my_submission --output train/out
 PYTHONPATH=cuda/src ~/.venvs/apctt-train/bin/python cuda/tools/make_submission.py \
   --check train/out/CICA_submission.zip
+
+# adapter-only handoff bundle
+python train/pack_adapter.py
 ```
 
 ## 8. Hard constraints and gotchas
@@ -160,6 +181,9 @@ PYTHONPATH=cuda/src ~/.venvs/apctt-train/bin/python cuda/tools/make_submission.p
   `\x08`). Use the write/edit tools, or `chr(92)`, not shell heredocs, for regex code.
 - `module_eval.py` needs `PYTHONPATH=my_submission:cuda/src` (it inserts them itself).
 - After changing anything under `assets/`, repack; the package hash and both zips change.
+- Line endings: `.gitattributes` forces LF. Without it, Windows git (`core.autocrlf=true`)
+  checks files out as CRLF and the package hash changes although no content changed. If
+  `git ls-files --eol` shows `w/crlf` for a file, fix that before packing.
 
 ## 9. Known limits and next work
 
@@ -170,5 +194,9 @@ PYTHONPATH=cuda/src ~/.venvs/apctt-train/bin/python cuda/tools/make_submission.p
   TRL 7-9 rules.
 - The organizer's labels carry no evidence pages, so per-criterion rule quality can only be
   reviewed manually on a sample.
-- Tracked build artifacts remain in git from an earlier external commit. Suggested cleanup
-  (not run): `git rm -r --cached train/out train/__pycache__ train/data/pdfs`.
+- If the adapter is ever re-enabled, first align `llm.py:build_prompt` with the training
+  prompt (report year, excerpt selection), then re-measure on the SDG 14 holdout.
+- The earlier package hash `cd3e6aed…` could not be reproduced from the committed files
+  (neither LF nor CRLF), so the old zip was packed from an uncommitted state. Commit the
+  repack together with its source, as `SKILLS.md` §7 says.
+- `cuda/` still tracks `__pycache__/*.pyc`; that is the kit's and is left alone.

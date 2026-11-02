@@ -34,7 +34,8 @@ class AssessmentModule:
         module = config.get("module") or {}
         self._settings = dict(module.get("settings") or {})
         self._asset_root = Path(asset_root)
-        if self._settings.get("use_llm", True):
+        # Off unless the config asks for it: the adapter did not beat the rules prior.
+        if self._settings.get("use_llm", False):
             self._llm = LlmRefiner(self._asset_root)
 
     def assess(self, case: Mapping[str, Any], context: Any) -> dict[str, Any]:

@@ -10,8 +10,10 @@ worded prompt gives worse and less comparable answers.
 
 ## 1. One prompt at a time
 
+From Git Bash in the repository root (inside WSL, drop the `wsl ... -lc '` wrapper):
+
 ```bash
-MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 -- bash -lc 'cd "/mnt/c/Github Projects/apctt" && \
+MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 --cd "$(cygpath -w "$PWD")" -- bash -lc '\
   ~/.venvs/apctt-train/bin/python train/infer_check.py \
   --adapter my_submission/assets/smollm3-trl-lora \
   --data train/test_prompts.jsonl --index 0'
@@ -165,8 +167,9 @@ excerpts = bd.pick_pages(bd.page_texts("train/data/pdfs/USGS-SDG-061.pdf"), 2400
   failed or the adapter did not load.
 - A rationale that mentions the report, the model or a test is a good sign; a generic
   sentence repeated across cases is the 6-collapse.
-- 20 to 35 seconds per answer on the RTX 3050 is normal (about 2 GiB VRAM). Minutes per
-  answer means it is running on CPU or swapping.
+- On the RTX 3050 (about 2 GiB VRAM) a single cold `infer_check.py` run takes 20 to 35
+  seconds; `evaluate.py` averages about 14 seconds per case after the one-time load.
+  Minutes per answer means it is running on CPU or swapping.
 - Cases the adapter saw in training (012, 040, 061) are optimistic. Held-out cases are
   076, 096 and 100. Judge generalisation on those.
 - The adapter predicts 6 most of the time and rarely reaches 4, 5, 8 or 9. That is why the

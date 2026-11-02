@@ -4,7 +4,7 @@
   "team": "CICA",
   "package_id": "cica-usgs-trl-assessor",
   "package_version": "0.1.0",
-  "declared_package_sha256": "cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d",
+  "declared_package_sha256": "fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c",
   "team_training": "team_trained_qlora_adapter",
   "training": {
     "code": "train/build_data.py, train/train_qlora.py (not shipped in the submission zip; handover by repository version)",

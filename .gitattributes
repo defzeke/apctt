@@ -1,0 +1,11 @@
+# Keep LF on every OS. The submission package hash covers raw bytes of
+# participant_module/ and assets/, so a CRLF checkout (core.autocrlf=true on
+# Windows) would produce a different declared_package_sha256.
+* text=auto eol=lf
+
+*.safetensors binary
+*.pdf binary
+*.xlsx binary
+*.zip binary
+*.pyc binary
+*.png binary

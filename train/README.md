@@ -4,12 +4,17 @@ QLoRA fine-tune of `smollm3-3b-nf4` for one narrow job: turn retrieved report
 excerpts into `{"trl": 1-9, "rationale": "..."}`. Only the LoRA adapter is shipped;
 the base weights stay in the organizer's model store.
 
-Status on 2026-11-01: adapter trained (3 epochs, 18 min) into
-`my_submission/assets/smollm3-trl-lora`, scored **0.72 mean_A** on the 25-case SDG-14
-holdout (14 exact, 8 off-by-one, 3 off-by-two, 0 invalid). See `HANDOFF.md` for the
-partner guide and the TRL-6 collapse limitation.
+Status on 2026-11-03: adapter trained (3 epochs, 1150.6 s, about 19 min) into
+`my_submission/assets/smollm3-trl-lora`. On the 25-case SDG-14 holdout it scores
+**0.72 mean_A with `evaluate.py`** (14 exact, 8 off-by-one, 3 off-by-two, 0 invalid) but
+**0.68 with `module_eval.py`**, against 0.70 for the rules alone. The submission therefore
+ships rules-only (`settings.use_llm = false`); the adapter is bundled but off. See
+`HANDOFF.md` for the partner guide and the TRL-6 collapse limitation.
 
-## Environment (WSL2, already built)
+All commands run from the repository root. Generated files (`out/`, `data/pdfs/`) are
+git-ignored, so a fresh clone must rebuild them.
+
+## Environment (WSL2 on the training laptop, already built)
 
 ```bash
 wsl -d Ubuntu-22.04
@@ -20,7 +25,8 @@ wsl -d Ubuntu-22.04
 Rebuild from scratch if needed:
 
 ```bash
-wsl -d Ubuntu-22.04 -- bash "/mnt/c/Github Projects/apctt/train/setup_wsl.sh"
+# from Git Bash in the repository root
+MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 --cd "$(cygpath -w "$PWD")" -- bash train/setup_wsl.sh
 ```
 
 Training runs inside WSL2 because the Windows desktop reserves VRAM. The base model
@@ -29,9 +35,7 @@ is cached at `~/.cache/huggingface/hub/models--HuggingFaceTB--SmolLM3-3B/`.
 ## Commands
 
 ```bash
-cd "/mnt/c/Github Projects/apctt"
-
-# data (already done)
+# data (fetch the PDFs once per clone)
 cd cuda && python tools/get_public_cases.py --all --download --dir ../train/data/pdfs && cd ..
 ~/.venvs/apctt-train/bin/python train/build_data.py --holdout-sdg 14
 
@@ -58,7 +62,8 @@ cd cuda && python tools/get_public_cases.py --all --download --dir ../train/data
 
 - Keep every training example at **<= 900 tokens**. Longer sequences crash WSL with
   `CUDA driver error: device not ready` (memory pressure, not a clean OOM).
-- `--max-len 896`, `--r 8..16`, `--batch 1`, `--grad-accum 8`, `adamw_torch`.
+- `--max-len 896`, `--r 8`, `--batch 1`, `--grad-accum 4`, `adamw_torch` (the shipped
+  run). `--r 16 --grad-accum 8` crashed at the first optimizer step; see `HANDOFF.md` §5.
 - `build_data.py --max-chars 2400 --max-pages 4` produces ~780-token examples with
   no truncation on all 74 training records.
 - Verified: 10-sample run -> loss 2.735; inference on USGS-SDG-076 -> TRL match,
@@ -71,6 +76,8 @@ cd cuda && python tools/get_public_cases.py --all --download --dir ../train/data
 - `train_qlora.py` — QLoRA; `--dry-run` checks lengths, `--optim` selects the optimizer
 - `evaluate.py` — exact / off-by-one / invalid JSON over a split
 - `infer_check.py` — single-case generation with timing and peak VRAM
+- `module_eval.py` — the shipped module over the public cases (`--llm` adds the adapter)
+- `pack_adapter.py` — deterministic adapter-only handoff zip
 - `requirements-train.txt` — training-only dependencies (never shipped)
 - `USING_THE_ADAPTER.md` — how to run the adapter standalone and hand it to others
 - `TEST_PROMPTS.md` / `test_prompts.jsonl` — six labelled test prompts and how to run them

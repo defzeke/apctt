@@ -35,22 +35,25 @@ Do not leave a number in one file and a different number in another. If two tool
 
 1. Finish all code, data and asset edits first.
 2. Run the evaluation you intend to quote and save the JSON under `train/out/`.
-3. Repack as the last write to the bundle:
+3. Check line endings: `git ls-files --eol my_submission | grep w/crlf` must print nothing.
+   The package hash reads raw bytes, so a CRLF checkout changes it.
+4. Repack as the last write to the bundle. From the repository root (the packer needs only
+   the standard library, so Windows Python works too):
 
 ```bash
-MSYS_NO_PATHCONV=1 wsl -d Ubuntu-22.04 -- bash -lc 'cd "/mnt/c/Github Projects/apctt" && \
-  PYTHONPATH="cuda/src" ~/.venvs/apctt-train/bin/python cuda/tools/make_submission.py \
-  my_submission --output train/out'
+python cuda/tools/make_submission.py my_submission --output train/out
 ```
 
-4. Copy the printed `zip_sha256` and `declared_package_sha256` into:
+5. Copy the printed `zip_sha256` and `declared_package_sha256` into:
    - `AGENTS.md` §5,
    - `train/HANDOFF.md` §12,
    - `train/USING_THE_ADAPTER.md` §7,
-   - any other place that quotes them (search first: `rg "d030430f|72a90d9c"`).
-5. Rebuild the adapter-only handoff zip if the adapter folder changed, and update its hash
-   in `train/USING_THE_ADAPTER.md` §7.
-6. Run `make_submission.py --check` on the final zip and record the result.
+   - any other place that quotes them. Search for the first 8 characters of the *previous*
+     hashes before you overwrite them, e.g. `rg "fd4bd882|6d1e8831"` for the current pair.
+6. Rebuild the adapter-only handoff zip with `python train/pack_adapter.py` if the adapter
+   folder, `train/evaluate.py`, `train/infer_check.py` or `train/data/val.jsonl` changed, and
+   update its hash in `AGENTS.md` §5 and `train/USING_THE_ADAPTER.md` §7.
+7. Run `make_submission.py --check` on the final zip and record the result.
 
 Hard rule: never edit a file under `my_submission/participant_module/` or
 `my_submission/assets/` after the final repack. Editing only `my_submission/README.md`
@@ -75,7 +78,8 @@ changes the zip hash but not the package hash; repack and refresh the zip hash a
 - [ ] `train/README.md` status date and score match the latest evaluation JSON.
 - [ ] `train/USING_THE_ADAPTER.md` measured-state table, file hashes and limits match the
       current adapter folder.
-- [ ] `my_submission/README.md` result table matches `train/out/module-eval.json`.
+- [ ] `my_submission/README.md` result table matches `train/out/module-eval.json`
+      (git-ignored: after a fresh clone, fetch the PDFs and rerun `module_eval.py` first).
 - [ ] `AGENTS.md` §3, §5 numbers match the same JSON and the repacked zip.
 - [ ] `submission.json` and `declaration.json` carry the latest package hash written by the
       tool, and their settings/training blocks match the shipped state.
@@ -112,18 +116,25 @@ Format: `<type>(<scope>): <summary>` — imperative, lowercase, no trailing peri
 - Never split a repack from the code change it contains.
 - Do not commit `train/out/`, `__pycache__` or `train/data/pdfs/`; they are build artifacts.
   If they are already tracked, untrack them in a separate `chore(repo):` commit.
-- Stage only the source, docs and result JSON. Incidental `.pyc` edits are not part of the
-  iteration.
+- Stage only source and docs. Result JSON stays in the git-ignored `train/out/`; its numbers
+  go into the docs and the commit body.
 
-Current iteration (2026-11-02, evidence hygiene and re-pack):
+Current iteration (2026-11-03, doc sync, LF line endings and re-pack). Two commits:
 
 ```
-feat(module): tighten evidence extraction and TRL ladder filling
+chore(repo): untrack build artifacts and force lf line endings
 
-- filter credit lines, bylines, panel labels, map legends and place lists
-- join same-page window spans and verify them on normalised page text
-- fill the TRL ladder from the best met evidence
-- 99 public cases: A 0.7525 (54 exact), 7.2 met, 14.4 spans, 2.0 s/case
-- package cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d
-- zip 7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8
+- add .gitattributes (eol=lf) and a root .gitignore for caches
+- untrack train/out/smoke, team __pycache__ and the stray public PDF
+```
+
+```
+fix(module): keep the adapter off when use_llm is not set
+
+- AssessmentModule defaulted use_llm to true; it now defaults to false
+- rules path unchanged; 99 public cases stay A 0.7525 (54 exact)
+- add train/pack_adapter.py (deterministic adapter bundle)
+- sync docs: repo-root commands, r=8, licence files, versions, hashes
+- package fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c
+- zip 6d1e8831d33ba2c324137724412af504a8fbae4e99c624403b061e4a45d35cb4
 ```

@@ -17,11 +17,13 @@ a status for each of the 12 official checklist criteria, and page evidence with 
    criterion, and abstains only when no readable text exists;
 5. optionally refines the TRL with a bundled SmolLM3-3B QLoRA adapter (CUDA, off by default).
 
-The default configuration is CPU-only and uses no model weights.
+The default configuration is CPU-only and uses no model weights. The adapter path runs only
+when `settings.use_llm` is `true`; a config without that key stays rules-only.
 
 ## Results on the 99 public cases
 
-Rules-only, `train/module_eval.py`:
+Rules-only, `train/module_eval.py` (run of 2026-11-02 on the training laptop; the rules have
+not changed since):
 
 | metric | value |
 |---|---|

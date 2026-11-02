@@ -1,7 +1,8 @@
 # Handoff: continue training SmolLM3 for APCTT
 
-Last updated 2026-11-01. This document is for the next person on the team. It assumes
-no access to the previous chat.
+Last updated 2026-11-03. This document is for the next person on the team. It assumes
+no access to the previous chat. All commands run from the repository root; on the training
+laptop that is `/mnt/c/Github Projects/apctt` inside WSL.
 
 ## 1. What we are doing and why
 
@@ -41,8 +42,8 @@ Do not expect the adapter alone to win.
 | Training venv | `~/.venvs/apctt-train` (WSL home, not the repo) |
 | Python | 3.12 |
 | torch | 2.11.0+cu128, CUDA 12.8, bf16 supported |
-| transformers / peft / bitsandbytes | 5.22.1 / 0.21.2 / 0.50.2 |
-| Repo | `/mnt/c/Github Projects/apctt` |
+| transformers / peft / bitsandbytes | 5.22.1 / 0.21.2 / 0.50.2 (training venv; the event base env pins transformers 5.19.0) |
+| Repo | `/mnt/c/Github Projects/apctt` on this laptop; any clone path works |
 
 Verify in one line:
 
@@ -56,6 +57,10 @@ Rebuild from scratch with `train/setup_wsl.sh` (installs uv, Python 3.12, torch,
 `train/requirements-train.txt`).
 
 ## 3. What is already on disk
+
+On the training laptop. `train/data/pdfs/` and `train/out/` are git-ignored, so a fresh clone
+has neither: fetch the PDFs, then rebuild what you need with the commands below. The `out/`
+rows are local artifacts from earlier runs, not part of the repository.
 
 | Path | Contents | Size |
 |---|---|---|
@@ -76,7 +81,7 @@ Rebuild from scratch with `train/setup_wsl.sh` (installs uv, Python 3.12, torch,
 
 ```bash
 wsl -d Ubuntu-22.04
-cd "/mnt/c/Github Projects/apctt"
+cd <repository root>
 ~/.venvs/apctt-train/bin/python train/train_qlora.py \
   --data train/data/train.jsonl --max-len 896 --dry-run
 ```
@@ -95,7 +100,6 @@ If `records_truncated_to_no_target` is not 0, stop and fix data before training 
 ## 5. Full training
 
 ```bash
-cd "/mnt/c/Github Projects/apctt"
 ~/.venvs/apctt-train/bin/python train/train_qlora.py \
   --data train/data/train.jsonl \
   --out my_submission/assets/smollm3-trl-lora \
@@ -106,8 +110,8 @@ Defaults that are known to work on this card:
 
 - `--max-len 896`, `--r 8`, `--alpha 32`, `--epochs 3`, `--batch 1`,
   `--grad-accum 4`, `--lr 2e-4`, `--optim adamw_torch`, bf16.
-- Measured on this laptop: **18.3 minutes** for 74 records x 3 epochs, plus ~1.5
-  minutes of model load.
+- Measured on this laptop: **1150.6 s (about 19 minutes)** for 74 records x 3 epochs
+  (`training_manifest.json`), plus ~1.5 minutes of model load.
 - Do not use `--r 16 --grad-accum 8` here. That combination died at the first
   optimizer step with `CUDA driver error: device not ready` while Windows had only
   2.6 GB free; the WSL kernel logged `dxgkio_make_resident: Ioctl failed: -12`
@@ -170,11 +174,14 @@ tokens, 2.06 GiB peak (cold adapter loader, WSL).
 ## 7. Package for submission
 
 ```bash
-cd "/mnt/c/Github Projects/apctt"
 cp cuda/licenses/Apache-2.0.txt my_submission/assets/smollm3-trl-lora/LICENSE
-printf 'SmolLM3-3B (HuggingFaceTB), Apache-2.0, revision a07cc9a04f16550a088caea529712d1d335b0ac1\nAdapter weights: team-trained QLoRA, MIT.\n' \
+printf 'SmolLM3-3B (HuggingFaceTB), Apache-2.0, revision a07cc9a04f16550a088caea529712d1d335b0ac1\nAdapter weights: team-trained QLoRA (r=8), MIT.\n' \
   > my_submission/assets/smollm3-trl-lora/NOTICE
 ```
+
+`LICENSE` next to the adapter is the **Apache-2.0 base licence**, not the adapter's. The
+adapter's MIT text is `participant_module/LICENSE`; `train/pack_adapter.py` adds it to the
+handoff bundle as `smollm3-trl-lora/LICENSE-MIT`.
 
 In `my_submission/submission.json`, `models` must contain both:
 
@@ -186,21 +193,23 @@ In `my_submission/submission.json`, `models` must contain both:
    "team_trained": true,
    "base_model": "smollm3-3b-nf4",
    "license": "MIT",
-   "description": "QLoRA r=16 adapter for JSON TRL synthesis"}
+   "description": "QLoRA r=8 adapter (3 epochs, 74 USGS reports, seed 42) used by the optional CUDA refinement path; disabled by default."}
 ]
 ```
 
 Then:
 
 ```bash
-python cuda/tools/make_submission.py my_submission
+python cuda/tools/make_submission.py my_submission --output train/out
 ```
 
 Exit 0 = VALID. Exit 2 = licence review item. Exit 1 = refused; read each `ERROR`
-line. Do not commit the adapter to git; it is a build artifact.
+line. The shipped adapter (about 58 MB) is tracked in git so that a clone can be packed
+as is; do not commit other adapters (`train/out/` is ignored).
 
 The module loader must read the base from `APCTT_MODEL_STORE` and the adapter from
-`asset_root`, with `HF_HUB_OFFLINE=1` and `local_files_only=True`:
+`asset_root`, with `HF_HUB_OFFLINE=1` and `local_files_only=True`. The real loader is
+`participant_module/llm.py`; the sketch below shows the shape:
 
 ```python
 def load(self, config, asset_root):
@@ -252,7 +261,11 @@ double quant, bf16 compute). The pattern is also visible in
    never free-text quotes, to avoid the -1 fabrication penalty.
 4. **Ground the rationale.** Prefer extractive rationales taken from the cited page
    over generated prose. The experts score support, not fluency.
-5. **Measure the event budget.** On the event machine the module must load base +
+5. **Fix the prompt skew before re-testing the adapter.** Training prompts
+   (`build_data.py:build_user_text`) end the `Report:` line with `(<year>)` and use
+   `pick_pages` excerpts; the module (`llm.py:build_prompt`) drops the year and feeds
+   rule-selected excerpts. Align them, then re-measure on SDG 14.
+6. **Measure the event budget.** On the event machine the module must load base +
    adapter and assess within 180 s. Time a cold load from the model store in WSL and
    keep generation short (`max_new_tokens` <= 200).
 
@@ -269,28 +282,6 @@ double quant, bf16 compute). The pattern is also visible in
       strings are flagged; they are USGS public domain)
 - [x] `participant_module` implements criterion status + evidence (parts B and C)
 
-## 12. Shipped module (v0.1.0)
-
-`my_submission/` is packed as `train/out/CICA_submission.zip` (60.5 MB, package hash
-`cd3e6aed19787af334934cb9fc37df913949038e9716ce2c8e57da09f6012f3d`, zip hash
-`7ba9f8918d1682f103d1c4a20a579ad423e2cb8a0e79c446a5bf4e616a255ea8`).
-
-- CPU rules-only by default (`settings.use_llm = false`): pypdfium2 page text,
-  header/footer/caption/reference/credit/map-legend filtering, description-matched
-  criteria rules, TRL prior 6 with the ladder filled to that level, page-and-span
-  evidence (same-page window spans when a single sentence only partially matches).
-- Optional CUDA path loads `smollm3-3b-nf4` + the QLoRA adapter and trusts its TRL.
-  It is bundled and declared but off: 0.68 vs 0.70 (rules) on the held-out SDG 14
-  split, 14.3 s and 6.75 GiB per case.
-- Public-case results (rules): mean A 0.7525, 54 exact, 41 off-by-one, 4 off-by-two+,
-  0 invalid, 7.2 met criteria, 14.4 spans, 2.0 s, 0.26 GiB.
-- Module source: `participant_module/{adapter,extract,rules,llm}.py`; no packages
-  copied in; runtime deps come from the common base.
-- Adapter use and transfer: `train/USING_THE_ADAPTER.md` (standalone loading, prompt
-  format, hashes, handoff bundle, limits).
-- Any change to the model, data, results or package must follow `SKILLS.md` (documentation
-  and hash sync) and `AGENTS.md` (project context).
-
 ## 11. Files in this folder
 
 - `setup_wsl.sh` — one-time environment build
@@ -298,5 +289,31 @@ double quant, bf16 compute). The pattern is also visible in
 - `train_qlora.py` — QLoRA trainer; `--dry-run` validates token budgets
 - `evaluate.py` — part-A scoring over a split
 - `infer_check.py` — single-case generation, timing, peak VRAM
+- `module_eval.py` — the shipped module over the public cases
+- `pack_adapter.py` — deterministic adapter-only handoff zip
 - `requirements-train.txt` — training-only dependencies
 - `README.md` — short command reference
+
+## 12. Shipped module (v0.1.0)
+
+`my_submission/` is packed as `train/out/CICA_submission.zip` (60.5 MB, package hash
+`fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c`, zip hash
+`6d1e8831d33ba2c324137724412af504a8fbae4e99c624403b061e4a45d35cb4`, packed 2026-11-03,
+`--check` `VALID_WITH_REVIEW`).
+
+- CPU rules-only by default (`settings.use_llm = false`, and `false` in code when the
+  setting is absent): pypdfium2 page text,
+  header/footer/caption/reference/credit/map-legend filtering, description-matched
+  criteria rules, TRL prior 6 with the ladder filled to that level, page-and-span
+  evidence (same-page window spans when a single sentence only partially matches).
+- Optional CUDA path loads `smollm3-3b-nf4` + the QLoRA adapter and trusts its TRL.
+  It is bundled and declared but off: 0.68 vs 0.70 (rules) on the held-out SDG 14
+  split, 14.3 s and 6.75 GiB per case.
+- Public-case results (rules, `module_eval.py`, 2026-11-02): mean A 0.7525, 54 exact, 41 off-by-one, 4 off-by-two+,
+  0 invalid, 7.2 met criteria, 14.4 spans, 2.0 s, 0.26 GiB.
+- Module source: `participant_module/{adapter,extract,rules,llm}.py`; no packages
+  copied in; runtime deps come from the common base.
+- Adapter use and transfer: `train/USING_THE_ADAPTER.md` (standalone loading, prompt
+  format, hashes, handoff bundle, limits).
+- Any change to the model, data, results or package must follow `SKILLS.md` (documentation
+  and hash sync) and `AGENTS.md` (project context).

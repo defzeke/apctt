@@ -1,4 +1,3 @@
-data/pdfs/
 data/*.jsonl
 data/*.arrow
 data/*.lock

@@ -5,8 +5,12 @@ Two things can be tested:
 1. the **adapter alone** (TRL prediction from report excerpts), and
 2. the **shipped module** (rules plus optional adapter, criteria and evidence).
 
-Use the exact prompt format below. The adapter was trained on that format; a loosely
-worded prompt gives worse and less comparable answers.
+Use the exact prompt format below. The prompts here, and the outputs recorded on
+2026-11-02, belong to the **previous** adapter (2026-11-03, `build_data.py` format with the
+report year). The adapter shipped since 2026-11-04 was trained on the module prompt
+(`llm.py:build_prompt`, no year), so for comparable answers use
+`train/out/pipeline-data/val.jsonl` instead (`infer_check.py --data … --index N`). The old
+six prompts still run, but expect small differences.
 
 ## 1. One prompt at a time
 

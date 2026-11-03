@@ -27,9 +27,19 @@ _BOILERPLATE = re.compile(
     r"acknowledg|for navigation or regulatory|funding for|provided funding|"
     r"reader is referred|not intended|army corps of engineers|"
     r"any use of trade|permission to reproduce|public domain|"
-    r"does not imply endorsement|information product)",
+    r"does not imply endorsement|information product|wish(?:es)? to thank)",
     re.IGNORECASE,
 )
+# Contents and list-of-figures entries: "Results .......... 12".
+_DOT_LEADER = re.compile(r"\.{4,}|(?:\. ){3,}")
+# List-of-figures style captions: "Graphs showing ...", "Maps showing ...".
+_SHOWING = re.compile(r"^\w+ showing\b", re.IGNORECASE)
+# Table headnote tail: "[mi2, square miles; —, no data] Site number ..." split mid-bracket.
+_HEADNOTE = re.compile(r"^[^\[\]]*\]")
+# Running header or cover line: "Scientific Investigations Report 2023–5053".
+_SERIES = re.compile(
+    r"\b(?:Investigations Report|Open-File Report|Data Series|Techniques and Methods|"
+    r"Fact Sheet|Professional Paper|Data Report)\s+\d{4}[–-]\d{3,4}\b")
 _CAPTION = re.compile(
     r"^(?:photograph|figure|table|map|graph|diagram|chart|image|photo|"
     r"plate|appendix|view)\b",
@@ -105,6 +115,9 @@ def useful(text: str) -> bool:
         return False
     low = text.lower()
     if low.startswith(("source:", "credit:", "note:")) or _CAPTION.match(text):
+        return False
+    if (_DOT_LEADER.search(text) or _SHOWING.match(text) or _HEADNOTE.match(text)
+            or _SERIES.search(text)):
         return False
     if low.startswith(("summary of", "comparison of")) and any(
             term in low for term in ("water year", "table", "figure", "equation", "variable")):

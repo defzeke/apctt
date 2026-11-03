@@ -7,7 +7,8 @@ nf4, exactly as the event-time loader does it. Only the LoRA adapter is written;
 base weights are never copied into the submission. Run inside WSL2 to get the whole
 6 GiB of the GPU (the Windows desktop reserves some).
 
-OOM ladder: --max-len 1024, then --r 8, then --max-len 768.
+OOM ladder: --max-len 896, then 768, then --r 8, then --grad-accum 4, then
+`wsl --shutdown` on the training laptop.
 """
 
 from __future__ import annotations
@@ -124,26 +125,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-len", type=int, default=896)
     parser.add_argument("--epochs", type=float, default=3.0)
     parser.add_argument("--lr", type=float, default=2e-4)
-    parser.add_argument("--r", type=int, default=16)
+    parser.add_argument("--r", type=int, default=8)
     parser.add_argument("--alpha", type=int, default=32)
     parser.add_argument("--batch", type=int, default=1)
-    parser.add_argument("--grad-accum", type=int, default=8)
+    parser.add_argument("--grad-accum", type=int, default=4)
     parser.add_argument("--optim", default="adamw_torch",
                         help="paged_adamw_8bit, adamw_torch, adamw_8bit")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--dry-run", action="store_true",
                         help="tokenize only, print length and target-token stats, do not load the model")
     args = parser.parse_args(argv)
-
-    if not torch.cuda.is_available():
-        print(json.dumps({"status": "REFUSED", "reason": "CUDA_UNAVAILABLE"}))
-        return 3
-    bf16 = torch.cuda.is_bf16_supported()
-    print(json.dumps({
-        "status": "STARTING", "gpu": torch.cuda.get_device_name(0),
-        "vram_gib": round(torch.cuda.get_device_properties(0).total_memory / 2**30, 2),
-        "bf16": bf16, "base": args.base, "max_len": args.max_len,
-    }))
 
     started = time.time()
     tokenizer = AutoTokenizer.from_pretrained(
@@ -175,6 +166,17 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "REFUSED", "reason": "TARGET_TRUNCATED",
                           "hint": "raise --max-len or lower build_data.py --max-chars"}))
         return 4
+
+    # The CUDA check comes after the dry run: tokenization needs no GPU.
+    if not torch.cuda.is_available():
+        print(json.dumps({"status": "REFUSED", "reason": "CUDA_UNAVAILABLE"}))
+        return 3
+    bf16 = torch.cuda.is_bf16_supported()
+    print(json.dumps({
+        "status": "STARTING", "gpu": torch.cuda.get_device_name(0),
+        "vram_gib": round(torch.cuda.get_device_properties(0).total_memory / 2**30, 2),
+        "bf16": bf16, "base": args.base, "max_len": args.max_len,
+    }))
 
     model = load_base(args.base, bf16)
     model.config.use_cache = False

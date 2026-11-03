@@ -4,7 +4,7 @@
   "package_id": "cica-usgs-trl-assessor",
   "package_version": "0.1.0",
   "base_id": "apctt-base-9e7fe1324bb6",
-  "declared_package_sha256": "fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c",
+  "declared_package_sha256": "9a5b98347c307857c09a23b8013972ab2dbb759c9fe1bd3099e4dec353391d19",
   "license": "MIT",
   "compute": {
     "device": "cpu",
@@ -24,7 +24,7 @@
       "team_trained": true,
       "base_model": "smollm3-3b-nf4",
       "license": "MIT",
-      "description": "QLoRA r=8 adapter (3 epochs, 74 USGS reports, seed 42) used by the optional CUDA refinement path; disabled by default."
+      "description": "QLoRA r=8 adapter (3 epochs, 74 USGS reports, seed 42, module prompt, extractive rationale targets; 2026-11-04) used by the optional CUDA refinement path; disabled by default."
     }
   ]
 }

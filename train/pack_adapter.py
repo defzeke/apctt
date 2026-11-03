@@ -19,7 +19,9 @@ EXTRA = {
     "smollm3-trl-lora/LICENSE-MIT": Path("my_submission/participant_module/LICENSE"),
     "train/infer_check.py": Path("train/infer_check.py"),
     "train/evaluate.py": Path("train/evaluate.py"),
-    "train/data/val.jsonl": Path("train/data/val.jsonl"),
+    # Validation in the prompt format the shipped adapter was trained on (train/pipeline.py),
+    # kept at the old in-zip path so the handoff commands do not change.
+    "train/data/val.jsonl": Path("train/out/pipeline-data/val.jsonl"),
 }
 
 

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRL Assessor Test</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8;
+    --accent: #2f5fd0; --met: #1f7a43; --met-bg: #e4f4ea; --no: #9a3b1f; --no-bg: #fbe9e2;
+    --ins: #5f636b; --ins-bg: #eceef2; --warn: #8a5f00; --warn-bg: #fff4d6; --on-accent: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --panel: #1b2029; --text: #e6e9ef; --muted: #9aa3b5; --line: #2c3340;
+      --accent: #7aa2ff; --met: #6fd39a; --met-bg: #183526; --no: #ff9b7a; --no-bg: #3a1f17;
+      --ins: #aab0bc; --ins-bg: #262b35; --warn: #f0c35a; --warn-bg: #3a3017; --on-accent: #0b1220;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  main { display: grid; grid-template-columns: 340px 1fr; gap: 20px; padding: 20px 24px;
+         max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 15px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  select, input[type=text], input[type=file] { width: 100%; padding: 7px 8px; font: inherit;
+         color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+  .info { position: relative; display: inline-flex; align-items: center; justify-content: center;
+          width: 16px; height: 16px; margin-left: 4px; border: 1px solid var(--muted); border-radius: 50%;
+          font: italic 600 11px/1 Georgia, serif; color: var(--muted); cursor: help; vertical-align: 1px; }
+  .info:hover, .info:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+  .info:hover::after, .info:focus::after {
+    content: attr(data-tip); position: absolute; left: -8px; top: 22px; z-index: 10; width: 290px;
+    padding: 8px 10px; border-radius: 6px; background: var(--text); color: var(--bg);
+    font: 400 12px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; white-space: normal;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
+  .check { display: flex; gap: 8px; align-items: center; margin-top: 14px; color: var(--text); }
+  button { margin-top: 16px; width: 100%; padding: 10px; font: inherit; font-weight: 600;
+           color: var(--on-accent); background: var(--accent); border: 0; border-radius: 6px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .or { text-align: center; color: var(--muted); font-size: 12px; margin: 16px 0 4px; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .error { color: var(--no); background: var(--no-bg); padding: 10px; border-radius: 6px; }
+  .summary { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+  .big { font-size: 40px; font-weight: 700; line-height: 1; }
+  .stat small { display: block; color: var(--muted); font-size: 12px; }
+  .ok { color: var(--met); } .bad { color: var(--no); } .warn { color: var(--warn); }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-top: 1px solid var(--line); }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  td.id { white-space: nowrap; font-weight: 600; }
+  .desc { color: var(--muted); font-size: 12px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; white-space: nowrap; }
+  .b-met { color: var(--met); background: var(--met-bg); }
+  .b-not { color: var(--no); background: var(--no-bg); }
+  .b-ins { color: var(--ins); background: var(--ins-bg); }
+  .ev { margin: 0 0 8px; }
+  .ev a { font-weight: 600; color: var(--accent); text-decoration: none; margin-right: 6px; }
+  .span { font-size: 13px; }
+  .rk { margin-top: 6px; padding-left: 10px; border-left: 3px solid var(--line); font-size: 13px; }
+  .rk .p { font-variant-numeric: tabular-nums; color: var(--muted); margin-right: 6px; }
+  details { margin-top: 16px; }
+  pre { overflow: auto; max-height: 420px; font-size: 12px; background: var(--bg); padding: 10px; border-radius: 6px; }
+  .issues li { color: var(--no); }
+</style>
+</head>
+<body>
+<header>
+  <h1>TRL assessor — local test</h1>
+  <p>Runs the shipped rules-only module on a public case or your own PDF, checks the result
+     against the contract, and can show the B/C ranker's picks beside it.</p>
+</header>
+<main>
+  <section class="panel">
+    <h2>Input</h2>
+    <label for="sdg">SDG <span class="info" tabindex="0" data-tip="UN Sustainable Development Goal of the report: 6 clean water, 11 cities, 13 climate, 14 life below water. It only filters the case list below; the module never sees it.">i</span></label>
+    <select id="sdg"><option value="">All SDGs</option></select>
+    <label for="case">Public case <span class="info" tabindex="0" data-tip="One of the organizer's 99 sample reports. Picking one fills every field below with the organizer's values and shows the organizer's estimated TRL next to the result. Leave it on 'none' to test your own PDF.">i</span></label>
+    <select id="case"><option value="">Loading…</option></select>
+
+    <label for="pdf">PDF <span class="info" tabindex="0" data-tip="The report the module actually reads. A public case picks its own PDF. Choose another one to mix and match, or 'Upload a new PDF…' at the bottom to test your own file (max 50 MiB).">i</span></label>
+    <select id="pdf"></select>
+    <input type="file" id="file" accept="application/pdf" hidden>
+    <label for="target">Assessment target <span class="info" tabindex="0" data-tip="The exact thing being rated, for example one model or tool in the report. The TRL is for this thing, not the whole report. The rules use its words to find matching sentences and to judge criterion C12 (evidence is about the target).">i</span></label>
+    <select id="target"></select>
+    <label for="ttype">Target type <span class="info" tabindex="0" data-tip="How big the rated thing is. component: one part. subsystem: a group of parts. system: a deployed whole, such as a monitoring network. technology: a method, model, software or data product (most USGS cases).">i</span></label>
+    <select id="ttype"></select>
+    <label for="app">Intended application <span class="info" tabindex="0" data-tip="What the technology is meant to do, grouped by SDG target. A TRL is always judged against this purpose. The current rules do not read it; it is passed through to the result (the disabled adapter uses it).">i</span></label>
+    <select id="app"></select>
+    <label for="env">Intended environment <span class="info" tabindex="0" data-tip="Where it must work, for example a river basin or coastline. TRL 5-7 hinge on tests in a 'relevant' or 'operational' environment. The current rules do not read this field.">i</span></label>
+    <select id="env"></select>
+    <label for="ranker">Ranker <span class="info" tabindex="0" data-tip="Optional trained evidence ranker (development only, not in the submission). It re-scores sentences for each criterion and lists its top 3 or 5 picks beside the module's evidence. Off = exactly what the submission does.">i</span></label>
+    <select id="ranker">
+      <option value="0">Off (rules only)</option>
+      <option value="3">Top 3 per criterion</option>
+      <option value="5">Top 5 per criterion</option>
+    </select>
+    <div class="note" id="rankernote"></div>
+    <div class="note" id="sourcenote"></div>
+    <button id="run">Assess</button>
+    <div class="note" id="busy"></div>
+  </section>
+
+  <section class="panel" id="out">
+    <p class="note">Pick a case and press Assess.</p>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let CRITERIA = {};
+
+// Build DOM nodes without innerHTML: report text is untrusted.
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") node.className = value; else node.setAttribute(key, value);
+  }
+  for (const child of children.flat()) {
+    if (child === null || child === undefined || child === false) continue;
+    node.append(child instanceof Node ? child : String(child));
+  }
+  return node;
+}
+
+function badge(status) {
+  const kind = status === "met" ? "b-met" : status === "not met" ? "b-not" : "b-ins";
+  return el("span", { class: "badge " + kind }, status);
+}
+
+function pageLink(caseId, page) {
+  return el("a", { href: `/pdf/${encodeURIComponent(caseId)}#page=${page}`, target: "_blank",
+                   rel: "noopener" }, `p.${page}`);
+}
+
+let CASES = {};
+const UPLOAD = "__upload__";
+const short = (text, n = 90) => (text.length > n ? text.slice(0, n) + "…" : text);
+
+function fill(select, values, blank) {
+  select.replaceChildren(...(blank ? [el("option", { value: "" }, blank)] : []),
+    ...values.map((v) => el("option", { value: v, title: v }, short(v))));
+}
+
+// Keep a value selectable even if it is not in the list (e.g. after a manual change).
+function choose(select, value) {
+  if (value && ![...select.options].some((o) => o.value === value)) {
+    select.append(el("option", { value, title: value }, short(value)));
+  }
+  select.value = value || "";
+}
+
+function fillCases() {
+  const sdg = $("sdg").value;
+  const list = Object.values(CASES).filter((c) => !sdg || String(c.sdg) === sdg);
+  $("case").replaceChildren(el("option", { value: "" }, `— none (${list.length} cases) —`),
+    ...list.map((c) => {
+      const option = el("option", { value: c.case_id, title: c.title },
+        `${c.case_id} · TRL ${c.trl} · ${short(c.title, 60)}`);
+      option.disabled = !c.has_pdf;
+      return option;
+    }));
+}
+
+function fillPdfs(options) {
+  $("pdf").replaceChildren(
+    el("option", { value: "" }, "— choose a PDF —"),
+    el("optgroup", { label: "Public cases (train/data/pdfs)" },
+       options.pdfs.map((p) => el("option", { value: p.id }, p.label))),
+    options.uploads.length ? el("optgroup", { label: "Your uploads" },
+       options.uploads.map((p) => el("option", { value: p.id }, p.label))) : null,
+    el("option", { value: UPLOAD }, "Upload a new PDF…"));
+}
+
+async function loadCases() {
+  const data = await (await fetch("/api/cases")).json();
+  const o = data.options;
+  if (!o) {  // index.html is re-read per request, server.py only at start
+    throw new Error("the server is running older code than this page. Stop ui/server.py "
+                    + "(Ctrl+C) and start it again, then reload.");
+  }
+  CASES = Object.fromEntries(data.cases.map((c) => [c.case_id, c]));
+  const sdgs = [...new Set(data.cases.map((c) => c.sdg))].sort((a, b) => a - b);
+  $("sdg").replaceChildren(el("option", { value: "" }, "All SDGs"),
+    ...sdgs.map((s) => el("option", { value: String(s) }, `SDG ${s}`)));
+  fillCases();
+  fillPdfs(o);
+  fill($("target"), o.targets, "— file name —");
+  fill($("ttype"), o.target_types);
+  $("app").replaceChildren(el("option", { value: "" }, "— none —"),
+    ...o.applications.map((g) => el("optgroup", { label: g.group },
+      g.values.map((v) => el("option", { value: v, title: v }, short(v))))));
+  fill($("env"), o.environments, "— none —");
+  for (const c of data.criteria) CRITERIA[c.criterion_id] = c.description;
+  $("ranker").disabled = !data.ranker;
+  $("rankernote").textContent = data.ranker ? ""
+    : "No trained ranker in train/out/criteria-ranker (run train/train_ranker.py).";
+  $("sourcenote").textContent = `Options from cuda/contracts/public-cases.json (${data.cases.length} cases)`
+    + ` and USGS_SDG_open_data_set_corrected.xlsx (${o.sheet_rows} rows).`;
+}
+
+function applyCase() {
+  const c = CASES[$("case").value];
+  if (!c) return;
+  choose($("pdf"), c.case_id);
+  choose($("target"), c.target);
+  choose($("ttype"), c.target_type);
+  choose($("app"), c.application);
+  choose($("env"), c.environment);
+}
+
+async function uploadPicked() {
+  const file = $("file").files[0];
+  if (!file) { $("pdf").value = ""; return; }
+  $("busy").textContent = "Uploading…";
+  try {
+    const up = await postJson("/api/upload", file, { "X-Filename": file.name });
+    const data = await (await fetch("/api/cases")).json();
+    fillPdfs(data.options);
+    $("pdf").value = up.case_id;
+    $("case").value = "";
+    $("busy").textContent = `Uploaded ${up.name} (${up.pages} pages).`;
+  } catch (error) {
+    $("pdf").value = "";
+    $("busy").textContent = "";
+    $("out").replaceChildren(el("div", { class: "error" }, error.message));
+  } finally {
+    $("file").value = "";
+  }
+}
+
+async function postJson(url, body, headers = {}) {
+  const response = await fetch(url, { method: "POST", body, headers });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || response.statusText);
+  return data;
+}
+
+async function run() {
+  const button = $("run");
+  button.disabled = true;
+  const began = performance.now();
+  try {
+    const pdf = $("pdf").value;
+    if (!pdf || pdf === UPLOAD) throw new Error("Choose a public case or a PDF.");
+    const ranker = Number($("ranker").value);
+    $("busy").textContent = ranker ? "Assessing and ranking…" : "Assessing…";
+    const data = await postJson("/api/assess", JSON.stringify({
+      case_id: $("case").value, pdf, ranker, target: $("target").value,
+      target_type: $("ttype").value, application: $("app").value, environment: $("env").value,
+    }), { "Content-Type": "application/json" });
+    render(data);
+    $("busy").textContent = `Done in ${((performance.now() - began) / 1000).toFixed(1)} s.`;
+  } catch (error) {
+    $("out").replaceChildren(el("div", { class: "error" }, error.message));
+    $("busy").textContent = "";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function render(data) {
+  const r = data.result;
+  const met = Object.values(r.criterion_status).filter((s) => s === "met").length;
+  let trlClass = "";
+  let labelText = "—";
+  if (data.label) {
+    labelText = data.label.estimated_trl;
+    const delta = r.predicted_trl === null ? null : Math.abs(r.predicted_trl - data.label.estimated_trl);
+    trlClass = delta === 0 ? "ok" : delta === 1 ? "warn" : "bad";
+  }
+
+  const summary = el("div", { class: "summary" },
+    el("div", { class: "stat" }, el("small", {}, "Predicted TRL"),
+       el("div", { class: "big " + trlClass }, r.predicted_trl ?? "—")),
+    el("div", { class: "stat" }, el("small", {}, "Organizer estimate"), el("div", { class: "big" }, labelText)),
+    el("div", { class: "stat" }, el("small", {}, "Status"), r.assessment_status),
+    el("div", { class: "stat" }, el("small", {}, "Criteria met"), `${met} / ${Object.keys(r.criterion_status).length}`),
+    el("div", { class: "stat" }, el("small", {}, "Module time"), `${data.seconds} s`),
+    data.ranker ? el("div", { class: "stat" }, el("small", {}, "Ranker time"),
+                     `${data.ranker_seconds} s (${data.ranker_device})`) : null,
+    el("div", { class: "stat" }, el("small", {}, "Contract check"),
+       data.issues.length ? el("span", { class: "bad" }, `${data.issues.length} issue(s)`)
+                          : el("span", { class: "ok" }, "valid")),
+  );
+
+  const rows = Object.keys(r.criterion_status).map((cid) => {
+    const status = r.criterion_status[cid];
+    const evidence = (r.evidence_reference[cid] || []).map((item) =>
+      el("div", { class: "ev" }, pageLink(data.case_id, item.page),
+         el("span", { class: "span" }, item.supporting_span || "(no span)")));
+    const missing = r.missing_evidence[cid] ? el("div", { class: "desc" }, r.missing_evidence[cid]) : null;
+    const ranked = data.ranker && data.ranker[cid]
+      ? el("div", { class: "rk" }, el("div", { class: "desc" }, `Ranker top ${data.ranker[cid].length}`),
+           data.ranker[cid].map((x) => el("div", {},
+             el("span", { class: "p" }, x.p.toFixed(2)), pageLink(data.case_id, x.page),
+             x.text.length > 220 ? x.text.slice(0, 220) + "…" : x.text)))
+      : null;
+    const description = CRITERIA[cid] || "";
+    return el("tr", {},
+      el("td", { class: "id" }, cid),
+      el("td", {}, el("div", {}, description.split(":")[0]),
+         el("div", { class: "desc" }, description.split(":").slice(1).join(":").trim())),
+      el("td", {}, badge(status)),
+      el("td", {}, evidence, missing, ranked));
+  });
+
+  $("out").replaceChildren(
+    el("h2", {}, `${data.case_id} — ${data.title}`),
+    data.label ? el("p", { class: "desc" }, "Organizer rationale: " + data.label.rationale) : null,
+    summary,
+    data.issues.length ? el("ul", { class: "issues" }, data.issues.map((i) => el("li", {}, i))) : null,
+    r.trl_rationale ? el("p", { class: "desc" }, "Module rationale: " + r.trl_rationale) : null,
+    el("table", {},
+      el("thead", {}, el("tr", {}, el("th", {}, "ID"), el("th", {}, "Criterion"),
+                                    el("th", {}, "Status"), el("th", {}, "Evidence (first 3 pages count for B)"))),
+      el("tbody", {}, rows)),
+    el("details", {}, el("summary", {}, "Raw result JSON"), el("pre", {}, JSON.stringify(r, null, 2))),
+  );
+}
+
+$("run").addEventListener("click", run);
+$("sdg").addEventListener("change", fillCases);
+$("case").addEventListener("change", applyCase);
+$("pdf").addEventListener("change", () => {
+  if ($("pdf").value === UPLOAD) { $("file").click(); return; }
+  if ($("case").value && $("pdf").value !== $("case").value) $("case").value = "";
+});
+$("file").addEventListener("change", uploadPicked);
+$("file").addEventListener("cancel", () => { $("pdf").value = ""; });
+// Screen readers read the tooltip text as the icon's name.
+for (const info of document.querySelectorAll(".info")) {
+  info.setAttribute("aria-label", info.dataset.tip);
+  info.addEventListener("click", (event) => event.preventDefault());  // don't open the select
+}
+loadCases().catch((error) => {
+  $("out").replaceChildren(el("div", { class: "error" }, "Cannot load the cases: " + error.message));
+});
+</script>
+</body>
+</html>

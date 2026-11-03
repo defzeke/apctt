@@ -4,11 +4,11 @@
   "team": "CICA",
   "package_id": "cica-usgs-trl-assessor",
   "package_version": "0.1.0",
-  "declared_package_sha256": "fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c",
+  "declared_package_sha256": "9a5b98347c307857c09a23b8013972ab2dbb759c9fe1bd3099e4dec353391d19",
   "team_training": "team_trained_qlora_adapter",
   "training": {
-    "code": "train/build_data.py, train/train_qlora.py (not shipped in the submission zip; handover by repository version)",
-    "method": "QLoRA (4-bit NF4 base) with TRL SFTTrainer and PEFT",
+    "code": "train/pipeline.py (PDF extraction, extractive targets, module prompt) and train/train_qlora.py (not shipped in the submission zip; handover by repository version)",
+    "method": "QLoRA (4-bit NF4 base) with the transformers Trainer and PEFT",
     "base_model": "smollm3-3b-nf4 (HuggingFaceTB/SmolLM3-3B, revision a07cc9a04f16550a088caea529712d1d335b0ac1)",
     "configuration": {
       "records": 74,
@@ -33,9 +33,10 @@
       "seed": 42,
       "compute_dtype": "bfloat16"
     },
-    "hardware": "NVIDIA GeForce RTX 3050 6 GB, WSL2 Ubuntu 22.04, torch 2.11.0+cu128, Python 3.12",
+    "hardware": "NVIDIA GeForce RTX 4060 Laptop GPU 8 GB, WSL2 Ubuntu 26.04, torch 2.15.0+cu132, Python 3.14.4, 231 s",
     "labels": "organizer-estimated TRL from the public USGS sheet; not expert gold",
-    "output": "assets/smollm3-trl-lora (adapter_model.safetensors, 60,523,464 bytes)"
+    "output": "assets/smollm3-trl-lora (adapter_model.safetensors, 60,523,464 bytes)",
+    "targets": "TRL: organizer estimate; rationale: the report sentence that best matches the organizer's reason (extractive)"
   },
   "data_sources": [
     {
@@ -50,7 +51,7 @@
     {
       "source": "USGS reports used to fine-tune the optional TRL adapter (74 of the public cases, split by SDG target)",
       "version": "apctt-public-cases-v1 PDFs, checked by SHA-256",
-      "date": "2026-11-01",
+      "date": "2026-11-04",
       "role": "Supervised fine-tuning of the QLoRA adapter; validation on a held-out SDG 14 split and on a stratified random split",
       "label_origin": "Organizer's estimated TRL from the public sheet, used as the target label; not expert gold",
       "linked_project": "None",
@@ -71,5 +72,5 @@
       "catalogue model smollm3-3b-nf4 (only loaded when settings.use_llm is true)"
     ]
   },
-  "notes": "The shipped default is CPU rules-only (settings.use_llm=false): pypdfium2 text extraction, sentence filtering, description-matched criteria rules with page-and-span evidence. The adapter is bundled and declared but disabled because it did not beat the rules-only TRL prior on the held-out SDG 14 public split (0.68 vs 0.70 mean part-A score). No NASA TechPort data was used."
+  "notes": "The shipped default is CPU rules-only (settings.use_llm=false): pypdfium2 text extraction, sentence filtering, description-matched criteria rules with page-and-span evidence. The adapter (2026-11-04 version, trained on the module's own prompt) is bundled and declared but disabled: inside the module it ties the rules-only TRL prior on the held-out SDG 14 public split (0.70 vs 0.70 mean part-A score; the previous adapter scored 0.68). No NASA TechPort data was used."
 }

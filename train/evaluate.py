@@ -16,6 +16,7 @@ import json
 import os
 import re
 import time
+from collections import Counter
 from pathlib import Path
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -48,6 +49,54 @@ def parse_trl(text: str) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def parse_rationale(text: str) -> str:
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        return ""
+    try:
+        value = json.loads(match.group(0)).get("rationale", "")
+    except json.JSONDecodeError:
+        return ""
+    return str(value or "")
+
+
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", (text or "").lower())
+
+
+def _numbers(text: str) -> set[str]:
+    return set(re.findall(r"\d+(?:\.\d+)?", text or ""))
+
+
+def token_f1(expected: str, generated: str) -> float:
+    """Bag-of-words F1 between the expected and generated rationale."""
+    left, right = _words(expected), _words(generated)
+    if not left or not right:
+        return 0.0
+    overlap = sum((Counter(left) & Counter(right)).values())
+    if not overlap:
+        return 0.0
+    precision, recall = overlap / len(right), overlap / len(left)
+    return round(2 * precision * recall / (precision + recall), 3)
+
+
+def number_recall(expected: str, generated: str) -> float:
+    wanted = _numbers(expected)
+    if not wanted:
+        return 1.0
+    return round(len(wanted & _numbers(generated)) / len(wanted), 3)
+
+
+def grounded_share(generated: str, source: str) -> float:
+    """Share of generated 5-grams that appear verbatim in the excerpt."""
+    words = _words(generated)
+    grams = {" ".join(words[index:index + 5]) for index in range(len(words) - 4)}
+    if not grams:
+        return 0.0
+    haystack = " " + " ".join(_words(source)) + " "
+    return round(sum(1 for gram in grams if gram in haystack) / len(grams), 3)
 
 
 def main() -> int:
@@ -97,11 +146,21 @@ def main() -> int:
         delta = None if predicted is None else abs(predicted - expected)
         score = 1.0 if delta == 0 else (0.5 if delta == 1 else 0.0)
         points.append(score)
+        target = json.loads(record["messages"][-1]["content"])
+        reason = parse_rationale(text)
         rows.append({"case_id": record.get("case_id"), "expected": expected,
                      "predicted": predicted, "delta": delta, "score": score,
+                     "rationale_f1": token_f1(str(target.get("rationale", "")), reason),
+                     "number_recall": number_recall(str(target.get("rationale", "")), reason),
+                     "grounded_5gram": grounded_share(
+                         reason, record["messages"][1]["content"]),
                      "seconds": round(time.time() - begin, 1), "raw": text})
         print(f"{record.get('case_id')} expected={expected} predicted={predicted} "
-              f"score={score}", flush=True)
+              f"score={score} f1={rows[-1]['rationale_f1']} "
+              f"grounded={rows[-1]['grounded_5gram']}", flush=True)
+
+    def mean(key: str) -> float:
+        return round(sum(row[key] for row in rows) / len(rows), 3)
 
     summary = {
         "records": len(rows),
@@ -110,6 +169,9 @@ def main() -> int:
         "off_by_one": sum(1 for row in rows if row["delta"] == 1),
         "off_by_two_or_more": sum(1 for row in rows if row["delta"] is not None and row["delta"] >= 2),
         "invalid_output": sum(1 for row in rows if row["predicted"] is None),
+        "rationale_token_f1": mean("rationale_f1"),
+        "rationale_number_recall": mean("number_recall"),
+        "rationale_grounded_5gram": mean("grounded_5gram"),
         "generation_seconds_mean": round(sum(row["seconds"] for row in rows) / len(rows), 1),
         "wall_seconds": round(time.time() - started, 1),
         "peak_vram_gib": round(torch.cuda.max_memory_allocated() / 2**30, 2),

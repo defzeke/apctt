@@ -12,6 +12,8 @@ Run this checklist if you touch any of:
 - `my_submission/assets/smollm3-trl-lora/` (weights, config, manifest, model card);
 - `train/build_data.py`, `train/train_qlora.py`, or `train/data/*.jsonl`;
 - `train/evaluate.py`, `train/infer_check.py`, `train/module_eval.py`;
+- `train/build_criteria_data.py`, `train/train_ranker.py`, `train/ranker_check.py` (B/C
+  ranker: result numbers live in `AGENTS.md` §3, `train/README.md` and `train/HANDOFF.md`);
 - `my_submission/participant_module/` (rules, extraction, TRL policy, settings);
 - `my_submission/submission.json`, `my_submission/declaration.json`, `my_submission/README.md`;
 - the README or handoff files themselves.
@@ -49,7 +51,7 @@ python cuda/tools/make_submission.py my_submission --output train/out
    - `train/HANDOFF.md` §12,
    - `train/USING_THE_ADAPTER.md` §7,
    - any other place that quotes them. Search for the first 8 characters of the *previous*
-     hashes before you overwrite them, e.g. `rg "fd4bd882|6d1e8831"` for the current pair.
+     hashes before you overwrite them, e.g. `rg "9a5b9834|efa68e1e"` for the current pair.
 6. Rebuild the adapter-only handoff zip with `python train/pack_adapter.py` if the adapter
    folder, `train/evaluate.py`, `train/infer_check.py` or `train/data/val.jsonl` changed, and
    update its hash in `AGENTS.md` §5 and `train/USING_THE_ADAPTER.md` §7.
@@ -61,11 +63,13 @@ changes the zip hash but not the package hash; repack and refresh the zip hash a
 
 ## 4. Status wording rules
 
-- The submission is **rules-only** by default (`use_llm = false`) because the adapter scored
-  0.68 on the SDG 14 holdout under `module_eval.py` versus 0.70 for the rules. Do not write
-  that the adapter is enabled unless `submission.json` says so.
-- Quote part-A results with the tool: "0.72 with `evaluate.py`" and "0.68 with
-  `module_eval.py`" on the same split. Never quote 0.72 as the module's result.
+- The submission is **rules-only** by default (`use_llm = false`) because the shipped adapter
+  (2026-11-04) only ties the rules on the SDG 14 holdout under `module_eval.py --llm` (0.70
+  vs 0.70, predicting 6 everywhere). Do not write that the adapter is enabled unless
+  `submission.json` says so.
+- Quote part-A results with the tool and the adapter version: shipped adapter "0.70 with
+  `evaluate.py`" and "0.70 with `module_eval.py --llm`"; old 2026-11-03 adapter "0.72 with
+  `evaluate.py`" and "0.68 with `module_eval.py`". Never quote 0.72 as the module's result.
 - The public labels are the organizer's estimates, not expert gold. Say so when quoting the
   99-case score.
 - `VALID_WITH_REVIEW` is the expected intake result; name the two USGS public-domain licence

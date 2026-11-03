@@ -1,6 +1,6 @@
 # Using and handing over the fine-tuned model
 
-Current state, 2026-11-03. This guide covers the QLoRA adapter in
+Current state, 2026-11-04 (adapter replaced with the `train/pipeline.py` version). This guide covers the QLoRA adapter in
 `my_submission/assets/smollm3-trl-lora` and how to pass it to another person or team.
 All commands run from the repository root.
 
@@ -17,15 +17,17 @@ weights and must be loaded on top of the catalogue base model. The base weights 
 | base revision | `a07cc9a04f16550a088caea529712d1d335b0ac1` |
 | adapter licence | MIT (text: `participant_module/LICENSE`; `LICENSE-MIT` in the handoff bundle) |
 | base licence | Apache-2.0 (`LICENSE` and `NOTICE` in the adapter folder are the base's; keep them) |
-| training | QLoRA r=8, 3 epochs, 74 USGS reports, max length 896, seed 42 |
+| training | QLoRA r=8, 3 epochs, 74 USGS reports (SDG 14 held out), max length 896, seed 42, 231 s on an RTX 4060 Laptop |
+| prompt | the module's own `participant_module/llm.py:build_prompt` |
+| rationale target | extractive: the report sentence that best matches the organizer's reason |
 | output | one JSON object: `{"trl": 1-9, "rationale": "..."}` |
 
 Hashes (LF files, as committed; a CRLF checkout changes the two JSON hashes):
 
 ```
-821a287c639f13d075c70724d0bda33d29cb5e5bba2b0e936016bfd83b8feefd  adapter_config.json
-17b781a9ae7c4c8f05f6472399d9b4aca280e61ec62a6335f6bedcbd011cdee2  adapter_model.safetensors
-e110ad63e251400e2d913eb9e758fc4652f4af4f41ebe9d6b4d1332bcdc71425  training_manifest.json
+0738cd19c630c6e51e13f54f19613bf21f3ccdd751e5552619f918ce1e181202  adapter_config.json
+5660a04995386760ef98be35a3419c8d558dfa1367ed4c982adcbbdd30819f68  adapter_model.safetensors
+5585ea5005431f33e4249d6df06a48b67799de7a936bd4af25d13fefae0c2f06  training_manifest.json
 ```
 
 What it does well: broad TRL sanity checks on USGS-style reports, with the strongest
@@ -37,13 +39,15 @@ assessment module uses deterministic rules for that and treats the adapter as op
 | test | result |
 |---|---|
 | held-out SDG 14 split (25 cases, rules only) | mean part-A 0.70 |
-| held-out SDG 14 split (25 cases, adapter) | mean part-A 0.68 |
+| held-out SDG 14 split (25 cases, adapter inside the module, `module_eval.py --llm`) | mean part-A 0.70, 13 exact; predicts 6 for all 25 |
+| held-out SDG 14 split (25 cases, `evaluate.py` on `pipeline-data/val.jsonl`) | mean part-A 0.70, 13 exact, rationale grounded 5-gram 0.998 |
+| previous adapter (2026-11-03), inside the module | mean part-A 0.68 |
 | 99 public cases (rules only) | mean part-A 0.7525, 0 invalid |
 | always predict 6 | 0.753 on 99 public, 0.70 on SDG 14 |
-| adapter cold load + 160 tokens (RTX 3050 6 GB) | about 33 s, 2.06 GiB peak VRAM |
-| module with adapter, integrated | about 14 s per case after load, 6.75 GiB RSS |
+| module with adapter, cold first case (RTX 4060 Laptop) | 27-38 s, 2.06 GiB peak VRAM (`evaluate.py`) |
+| module with adapter, after load | about 5 s per case, 6.7 GiB RSS |
 
-The adapter does not beat "always predict 6" on the held-out public split. That is why the
+The adapter only ties "always predict 6" on the held-out public split. That is why the
 submission ships with `settings.use_llm = false`. The adapter is still bundled so the CUDA
 path can be reproduced and improved later.
 
@@ -158,14 +162,12 @@ Rules that matter:
 - Decode with `do_sample=False` so results are repeatable.
 - The reply is free text; extract the JSON object with a regex before parsing.
 
-The prompt builder used in training is `train/build_data.py:build_user_text` (with
-`pick_pages` for the excerpts); the training data format is one record per case in
-`train/data/{train,val}.jsonl` with `messages` (system, user, assistant).
-
-The module's builder, `participant_module/llm.py:build_prompt`, is **not** identical: it
-omits the `(<year>)` after the report title and feeds rule-selected excerpts. Expect the
-module path to score lower than `evaluate.py` (0.68 vs 0.72 on SDG 14) until the two are
-aligned.
+The prompt used in training is the module's own `participant_module/llm.py:build_prompt`
+(built by `train/pipeline.py`); the training data format is one record per case in
+`train/out/pipeline-data/{train,val}.jsonl` with `messages` (system, user, assistant). Only
+the excerpt selection differs: `pipeline.py` picks pages by TRL and evidence terms, the
+module by its rules. Both tools score 0.70 on SDG 14. The older adapter used
+`train/build_data.py:build_user_text` (with the report year) and lost 0.04 in the module.
 
 ## 6. Smoke test after any transfer
 
@@ -177,8 +179,10 @@ aligned.
 ```
 
 It prints the generated text, parsed JSON, whether the TRL matches, seconds and peak VRAM.
-A healthy run parses JSON. On the RTX 3050 a single cold run takes about 20 to 35 seconds;
-after load, `evaluate.py` averages about 14 seconds per case.
+A healthy run parses JSON, and the rationale is a sentence quoted from the excerpt. A single
+cold run takes about 20 to 35 seconds; after load, `evaluate.py` averages about 6 seconds per
+case on the RTX 4060 Laptop. Use `train/out/pipeline-data/val.jsonl` (or the bundle's
+`train/data/val.jsonl`, which is that file) for this adapter's prompt format.
 
 Ready-made prompts with known labels and recorded outputs: `train/TEST_PROMPTS.md` and
 `train/test_prompts.jsonl` (six cases; `infer_check.py --data train/test_prompts.jsonl
@@ -189,7 +193,7 @@ Score a whole split:
 ```bash
 ~/.venvs/apctt-train/bin/python train/evaluate.py \
   --adapter my_submission/assets/smollm3-trl-lora \
-  --data train/data/val.jsonl --out train/out/eval.json
+  --data train/out/pipeline-data/val.jsonl --out train/out/eval.json
 ```
 
 ## 7. Handing it to someone else
@@ -198,8 +202,8 @@ Two different handovers:
 
 - **The model alone** (for reuse, further training or review): the bundle below.
 - **The runnable submission** (what the organizer runs): `train/out/CICA_submission.zip`,
-  60.5 MB, zip SHA-256 `6d1e8831d33ba2c324137724412af504a8fbae4e99c624403b061e4a45d35cb4`,
-  package SHA-256 `fd4bd882315c4b3647d150f80f8f98be8eb3fd054c723445bd8d42bd0f63fe9c`.
+  60.6 MB, zip SHA-256 `efa68e1ec5e9df0f11467fa8f4256b584ed44d6cd16d51d8f3b026cf95894d4d`,
+  package SHA-256 `9a5b98347c307857c09a23b8013972ab2dbb759c9fe1bd3099e4dec353391d19`.
   It contains `participant_module/`, `assets/`, `submission.json`, `declaration.json` and
   `README.md`; run `cuda/tools/make_submission.py --check` on it after any change.
 
@@ -216,7 +220,7 @@ smollm3-trl-lora/
   training_manifest.json
 train/infer_check.py
 train/evaluate.py
-train/data/val.jsonl  # optional: a small labelled sample so the smoke test runs
+train/data/val.jsonl  # the 25 SDG 14 records in this adapter's prompt format (pipeline-data)
 ```
 
 Do not send the base weights, the Hugging Face cache, the WSL venv, or the PDF corpus.
@@ -231,8 +235,8 @@ python train/pack_adapter.py
 Current bundle:
 
 ```
-train/out/CICA_smollm3-trl-lora.zip   55,940,109 bytes
-sha256 e3587449e80dfdbed36728fd43190583d506861bb17dcb854d1c8ef2d2f0e612
+train/out/CICA_smollm3-trl-lora.zip   55,911,107 bytes
+sha256 a5c245ba3be72cf81974fd1cd934779345acb6cbdbec5726a68c7e67faf6e4d7
 ```
 
 The packer also prints every file hash. Give the receiver the zip hash and the three adapter
@@ -258,16 +262,16 @@ long as the base model is declared as the adapter's base, not uploaded.
 ## 8. Rebuilding the adapter from scratch
 
 ```bash
-~/.venvs/apctt-train/bin/python train/build_data.py --holdout-sdg 14
-~/.venvs/apctt-train/bin/python train/train_qlora.py \
-  --data train/data/train.jsonl --max-len 896 --dry-run
-~/.venvs/apctt-train/bin/python train/train_qlora.py \
-  --data train/data/train.jsonl \
-  --out my_submission/assets/smollm3-trl-lora
+# the shipped adapter: PDFs -> pipeline-data (extractive targets) -> QLoRA
+~/.venvs/apctt-train/bin/python train/pipeline.py --dry-run --base ~/models/SmolLM3-3B
+~/.venvs/apctt-train/bin/python train/pipeline.py --base ~/models/SmolLM3-3B
+# test inside the module, then copy into my_submission (keep LICENSE, NOTICE, README.md)
 ```
 
 `training_manifest.json` records the dataset hash, configuration, hardware and runtime.
-The 74-record run took 1150.6 s (about 19 minutes) on the RTX 3050.
+The 74-record run took 231.1 s on the RTX 4060 Laptop (1150.6 s for the older adapter on an
+RTX 3050). After copying, set `base_model_name_or_path` in `adapter_config.json` to
+`HuggingFaceTB/SmolLM3-3B` (the training run writes the local path), then repack.
 
 ## 9. Known limits
 
@@ -278,8 +282,8 @@ The 74-record run took 1150.6 s (about 19 minutes) on the RTX 3050.
 - **No per-criterion output.** The adapter predicts TRL and one rationale only.
 - **Short context.** Prompts were built from 4 pages at 2,400 characters; longer inputs are
   truncated by the module before generation.
-- **Prompt skew in the module.** `llm.py:build_prompt` differs from the training prompt
-  (no report year, different excerpt selection).
+- **Excerpt skew in the module.** The prompt text matches training, but the module picks
+  excerpt pages by its rules, while `pipeline.py` picks them by TRL and evidence terms.
 - **CUDA only.** The 4-bit loader needs a GPU; CPU inference requires a merged bf16 model.
 - **Not enabled in the shipped submission.** `settings.use_llm` is `false`; the measured
-  adapter did not beat the rules-only prior on the held-out split.
+  adapter ties the rules-only prior on the held-out split (0.70 vs 0.70).

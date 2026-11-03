@@ -3,8 +3,8 @@
   "base_model": "smollm3-3b-nf4",
   "base_repo": "HuggingFaceTB/SmolLM3-3B",
   "base_revision": "a07cc9a04f16550a088caea529712d1d335b0ac1",
-  "dataset_file": "train.jsonl",
-  "dataset_sha256": "3b0fd9e854ad152e6a917f29e772e00baa819dbfad7c84caf352a05d4b6060cb",
+  "dataset_file": "train/out/pipeline-data/train.jsonl (built by train/pipeline.py)",
+  "dataset_sha256": "0070eafdac0477954cd00f0ce90c08999661704d40f9a760f82fd47ada06f92b",
   "records": 74,
   "max_len": 896,
   "epochs": 3.0,
@@ -26,9 +26,11 @@
   "optimizer": "adamw_torch",
   "seed": 42,
   "compute_dtype": "bfloat16",
-  "gpu": "NVIDIA GeForce RTX 3050",
-  "torch": "2.11.0+cu128",
-  "python": "3.12.16",
-  "seconds": 1150.6,
-  "labels": "organizer-estimated TRL from USGS sheet; not expert gold"
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "torch": "2.15.0+cu132",
+  "python": "3.14.4",
+  "seconds": 231.1,
+  "labels": "organizer-estimated TRL from USGS sheet; not expert gold",
+  "targets": "extractive: the report sentence that best matches the organizer rationale",
+  "prompt": "participant_module/llm.py:build_prompt (same text at training and inference)"
 }

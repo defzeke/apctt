@@ -24,10 +24,13 @@ or page evidence; use `participant_module` for that.
 
 ## Training
 
-74 public APCTT cases, 3 epochs, max length 896, r=8, alpha=32, dropout 0.05, batch 1,
-gradient accumulation 4, learning rate 2e-4, seed 42, bf16. Labels are the organizer's
-estimated TRL from the public USGS sheet, not expert gold. Full configuration and runtime
-are in `training_manifest.json`.
+Version of 2026-11-04 (`train/pipeline.py`). 74 public APCTT cases (SDG 14 held out),
+3 epochs, max length 896, r=8, alpha=32, dropout 0.05, batch 1, gradient accumulation 4,
+learning rate 2e-4, seed 42, bf16, RTX 4060 Laptop, 231 s. The prompt is the module's own
+(`participant_module/llm.py:build_prompt`). The rationale target is extractive: the report
+sentence that best matches the organizer's reason, so the model quotes the excerpt instead
+of paraphrasing. TRL labels are the organizer's estimates from the public USGS sheet, not
+expert gold. Full configuration and runtime are in `training_manifest.json`.
 
 ## Use
 
@@ -43,6 +46,7 @@ its attribution. The adapter weights themselves are MIT; the MIT text is
 
 ## Limits
 
-The adapter learned the public label prior (most cases are TRL 6) and rarely predicts 5 or
-7 without strong wording. It is disabled by default in the CICA submission because it did
-not beat the rules-only prior on the held-out SDG 14 split.
+The adapter learned the public label prior (most cases are TRL 6): inside the module it
+predicted 6 for all 25 held-out SDG 14 cases (mean part-A 0.70, the same as the rules; the
+previous adapter scored 0.68). It is disabled by default in the CICA submission because it
+does not beat the rules-only prior.

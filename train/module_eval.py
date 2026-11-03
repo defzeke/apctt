@@ -58,6 +58,8 @@ def main() -> int:
     parser.add_argument("--only", default="")
     parser.add_argument("--llm", action="store_true", help="enable the adapter refinement")
     parser.add_argument("--out", type=Path, default=Path("train/out/module-eval.json"))
+    parser.add_argument("--assets", type=Path, default=Path("my_submission/assets"),
+                        help="asset root holding smollm3-trl-lora/ (test an adapter before shipping)")
     args = parser.parse_args()
 
     manifest = json.loads(
@@ -87,7 +89,7 @@ def main() -> int:
     }
 
     module = AssessmentModule()
-    module.load(config, Path("my_submission/assets"))
+    module.load(config, args.assets)
 
     rows = []
     points = []
